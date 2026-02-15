@@ -1,0 +1,203 @@
+'use client'
+
+import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import confetti from 'canvas-confetti'
+import { Trophy, Sparkles, CheckCircle2, X } from 'lucide-react'
+
+interface BadgeUnlockProps {
+  subtopicName: string
+  onClose: () => void
+}
+
+export default function BadgeUnlock({ subtopicName, onClose }: BadgeUnlockProps) {
+  const [showContent, setShowContent] = useState(false)
+
+  useEffect(() => {
+    // Epic confetti explosion
+    const duration = 5000
+    const animationEnd = Date.now() + duration
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 }
+
+    function randomInRange(min: number, max: number) {
+      return Math.random() * (max - min) + min
+    }
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now()
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval)
+      }
+
+      const particleCount = 50 * (timeLeft / duration)
+      
+      // Left side
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#00ffff', '#9d4edd', '#ff00ff', '#00ff00'],
+      })
+      
+      // Right side
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#00ffff', '#9d4edd', '#ff00ff', '#00ff00'],
+      })
+    }, 250)
+
+    setTimeout(() => setShowContent(true), 500)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          exit={{ scale: 0, rotate: 180 }}
+          transition={{ type: 'spring', duration: 0.8, bounce: 0.4 }}
+          className="relative glass-card p-12 max-w-2xl mx-4 text-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Badge Icon */}
+          <motion.div
+            animate={{
+              rotate: [0, 10, -10, 0],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
+            className="mb-6"
+          >
+            <div className="relative inline-block">
+              <Trophy className="w-32 h-32 text-neon-cyan drop-shadow-[0_0_30px_rgba(0,255,255,0.8)]" />
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                className="absolute inset-0"
+              >
+                <Sparkles className="w-40 h-40 text-neon-purple opacity-50" />
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {showContent && (
+            <>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-5xl font-bold neon-text mb-4"
+              >
+                🎉 BADGE UNLOCKED! 🎉
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="text-2xl text-gray-300 mb-8"
+              >
+                Master of {subtopicName}
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7 }}
+                className="bg-gradient-to-r from-neon-cyan/20 via-neon-purple/20 to-neon-pink/20 p-6 rounded-lg border border-neon-cyan/50 mb-8"
+              >
+                <h3 className="text-xl font-bold mb-4 flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-6 h-6 text-neon-green" />
+                  Achievements Unlocked
+                </h3>
+                <div className="space-y-2 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="text-neon-green">✅</span>
+                    <span>Completed Theory</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-neon-green">✅</span>
+                    <span>Passed MCQ Gate</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-neon-green">✅</span>
+                    <span>Solved Basic Coding Challenge</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+                className="flex items-center justify-center gap-4 mb-8"
+              >
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-neon-cyan">+100</div>
+                  <div className="text-sm text-gray-400">XP Earned</div>
+                </div>
+                <div className="w-px h-12 bg-neon-cyan/30" />
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-neon-purple">1</div>
+                  <div className="text-sm text-gray-400">Badge</div>
+                </div>
+                <div className="w-px h-12 bg-neon-cyan/30" />
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-neon-pink">3</div>
+                  <div className="text-sm text-gray-400">Phases</div>
+                </div>
+              </motion.div>
+
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onClose}
+                className="btn-primary text-xl px-8 py-4 w-full"
+              >
+                Continue Journey →
+              </motion.button>
+            </>
+          )}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { submitStandoffSolution } from '@/lib/database/standoffs'
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await request.json()
+    const { userId, solution, score } = body
+
+    if (!userId || !solution) {
+      return NextResponse.json(
+        { error: 'User ID and solution required' },
+        { status: 400 }
+      )
+    }
+
+    const success = await submitStandoffSolution(
+      params.id,
+      userId,
+      solution,
+      score || 0
+    )
+
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Failed to submit solution' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    console.error('Error submitting solution:', error)
+    return NextResponse.json(
+      { error: 'Failed to submit solution' },
+      { status: 500 }
+    )
+  }
+}
+
+
