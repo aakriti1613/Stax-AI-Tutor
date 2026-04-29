@@ -1,12 +1,14 @@
 // Database utilities for duels
 import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '@/lib/supabase'
 import { Duel, DuelStatus, ContestProblem } from '@/lib/types/contests'
+import { Domain } from '@/lib/subjects'
 
 export interface DuelDB {
   id: string
   challenger_id: string
   opponent_id: string
   status: string
+  domain: Domain
   problem_id: string
   problem_title: string
   problem_description: string
@@ -91,6 +93,7 @@ export async function createDuel(
   challengerId: string,
   opponentId: string,
   problem: ContestProblem,
+  domain: Domain,
   xpReward: number = 50
 ): Promise<string | null> {
   if (!isSupabaseConfigured() || !supabase) {
@@ -103,6 +106,7 @@ export async function createDuel(
       .insert({
         challenger_id: challengerId,
         opponent_id: opponentId,
+        domain: domain,
         status: 'pending',
         problem_id: problem.id,
         problem_title: problem.title,
@@ -433,6 +437,7 @@ function convertDuelFromDB(db: any): Duel {
     opponentId: db.opponent_id,
     opponentName: db.opponent?.username || db.opponent?.display_name || 'Opponent',
     status: db.status as DuelStatus,
+    domain: db.domain || 'placement', // Default to placement if not set
     problem,
     challengerSolution: db.challenger_solution || undefined,
     opponentSolution: db.opponent_solution || undefined,

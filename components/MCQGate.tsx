@@ -42,64 +42,71 @@ export default function MCQGate({ subject, unit, onPass, isFirstUnit = false }: 
     try {
       setLoading(true)
       
-      // Use database for first units, Gemini for others
-      if (isFirstUnit) {
-        try {
-          const { getMCQsForSubtopic } = await import('@/lib/mcqDatabase')
-          const unitParts = unit.split(' - ')
-          const mainUnit = unitParts[0]
-          const subtopic = unitParts[1] || unitParts[0]
-          
-          const dbMCQs = getMCQsForSubtopic(subject, mainUnit, subtopic)
-          if (dbMCQs.length > 0) {
-            // Convert database format to component format
-            const formattedMCQs = dbMCQs.map(mcq => ({
-              question: mcq.question,
-              options: mcq.options,
-              correctAnswer: mcq.correctAnswer,
-              explanation: mcq.explanation,
-              wrongExplanations: {},
-              difficulty: mcq.difficulty,
-            }))
-            setMcqs(formattedMCQs)
-            setLoading(false)
-            return
-          }
-        } catch (dbError) {
-          console.log('Database MCQs not found, falling back to Gemini')
-        }
-      }
+      // Extract subtopic from unit if needed
+      const unitParts = unit.split(' - ')
+      const mainUnit = unitParts[0]
+      const subtopic = unitParts[1] || unitParts[0] || unit
       
-      // Fallback to Gemini API
+      // Use static database via API (which generates MCQs on-the-fly if not found)
       const response = await axios.post('/api/gemini/mcq', {
         subject,
-        unit,
-        concept: unit, // Using unit as concept for now
+        unit: mainUnit,
+        subtopic: subtopic,
+        concept: subtopic, // For backward compatibility
       })
-      
-      if (response.data) {
-        // Handle both success and error responses
-        if (response.data.mcqs && Array.isArray(response.data.mcqs) && response.data.mcqs.length > 0) {
-          console.log('✅ Received MCQs:', response.data.mcqs.length)
-          setMcqs(response.data.mcqs)
-          if (response.data.error) {
-            toast(response.data.error, { icon: '⚠️' })
-          }
-        } else if (response.data.error) {
-          throw new Error(response.data.error)
-        } else {
-          throw new Error('No MCQs in response')
+
+      if (response.data && Array.isArray(response.data.mcqs) && response.data.mcqs.length > 0) {
+        setMcqs(response.data.mcqs)
+        if (response.data.error) {
+          toast(response.data.error, { icon: '⚠️' })
         }
       } else {
-        throw new Error('Invalid response format')
+        throw new Error(response.data?.error || 'No MCQs available')
       }
     } catch (error: any) {
       console.error('Error fetching MCQs:', error)
       const errorMsg = error.response?.data?.error || error.message || 'Failed to load questions'
       toast.error(errorMsg)
-      
-      // Set empty array so component shows retry button
-      setMcqs([])
+
+      // Fallback: use database directly if API fails
+      try {
+        const { getMCQsForSubtopic } = await import('@/lib/mcqDatabase')
+        const unitParts = unit.split(' - ')
+        const mainUnit = unitParts[0]
+        const subtopic = unitParts[1] || unitParts[0] || unit
+        
+        const dbMCQs = getMCQsForSubtopic(subject, mainUnit, subtopic)
+        if (dbMCQs.length > 0) {
+          const formattedMCQs = dbMCQs.map(mcq => ({
+            question: mcq.question,
+            options: mcq.options,
+            correctAnswer: mcq.correctAnswer,
+            explanation: mcq.explanation,
+            wrongExplanations: {},
+            difficulty: mcq.difficulty.toLowerCase() as 'basic' | 'medium' | 'advanced',
+          }))
+          setMcqs(formattedMCQs)
+        } else {
+          throw new Error('No MCQs found')
+        }
+      } catch (dbError) {
+        // Final fallback
+        const fallback: MCQ[] = [
+          {
+            question: `Which of the following best describes ${unit} in ${subject}?`,
+            options: [
+              `${unit} is a fundamental concept in ${subject}.`,
+              `${unit} is unrelated to ${subject}.`,
+              `${unit} is only used in legacy systems.`,
+              `None of the above.`,
+            ],
+            correctAnswer: 0,
+            explanation: `${unit} is an important concept in ${subject}. Understanding it is essential for mastering this topic.`,
+            difficulty: 'easy',
+          },
+        ]
+        setMcqs(fallback)
+      }
     } finally {
       setLoading(false)
     }

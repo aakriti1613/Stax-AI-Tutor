@@ -6,6 +6,8 @@ import axios from 'axios'
 import { CheckCircle2, Loader2, Code2, Lightbulb } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import toast from 'react-hot-toast'
+import YouTubeVideos from './YouTubeVideos'
+import { SUBJECTS, type Subject } from '@/lib/subjects'
 
 interface TheoryData {
   title: string
@@ -24,9 +26,12 @@ interface ConceptLearningProps {
   unit: string
   subtopic?: string
   onComplete: () => void
+  subjectId?: Subject
+  unitId?: string
+  subtopicId?: string
 }
 
-export default function ConceptLearning({ subject, unit, subtopic, onComplete }: ConceptLearningProps) {
+export default function ConceptLearning({ subject, unit, subtopic, onComplete, subjectId, unitId, subtopicId }: ConceptLearningProps) {
   const [theory, setTheory] = useState<TheoryData | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentSection, setCurrentSection] = useState(0)
@@ -132,6 +137,17 @@ export default function ConceptLearning({ subject, unit, subtopic, onComplete }:
 
   const section = theory.sections[currentSection]
 
+  // Get YouTube videos from subtopic if available
+  const youtubeVideos: string[] = []
+  if (subjectId && unitId && subtopicId) {
+    const subjectData = SUBJECTS[subjectId]
+    const unitData = subjectData?.units.find(u => u.id === unitId)
+    const subtopicData = unitData?.subtopics.find(s => s.id === subtopicId)
+    if (subtopicData?.youtubeVideos) {
+      youtubeVideos.push(...subtopicData.youtubeVideos)
+    }
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -230,6 +246,11 @@ export default function ConceptLearning({ subject, unit, subtopic, onComplete }:
             ))}
           </ul>
         </motion.div>
+      )}
+
+      {/* Recommended Videos - shown after theory content */}
+      {youtubeVideos.length > 0 && (
+        <YouTubeVideos videoIds={youtubeVideos} title="Recommended Video Lectures" />
       )}
 
       {/* Navigation */}

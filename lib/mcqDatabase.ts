@@ -478,10 +478,208 @@ export const MCQ_DATABASE: MCQData[] = [
 
 // Helper function to get MCQs for a specific subject/unit/subtopic
 export function getMCQsForSubtopic(subject: string, unit: string, subtopic: string): MCQData[] {
-  return MCQ_DATABASE.filter(
+  const dbMCQs = MCQ_DATABASE.filter(
     mcq => mcq.subject === subject && mcq.unit === unit && mcq.subtopic === subtopic
   )
+  
+  // If we have MCQs in database, return them
+  if (dbMCQs.length > 0) {
+    return dbMCQs
+  }
+  
+  // Otherwise, generate 3 comprehensive MCQs on-the-fly
+  return generateMCQsForSubtopic(subject, unit, subtopic)
 }
+
+/**
+ * Generate 3 comprehensive MCQs for any subtopic
+ * This ensures every subtopic has MCQ content even if not in the database
+ */
+function generateMCQsForSubtopic(
+  subject: string,
+  unit: string,
+  subtopic: string
+): MCQData[] {
+  const subtopicLower = subtopic.toLowerCase()
+  const unitLower = unit.toLowerCase()
+  
+  // Generate context-appropriate questions based on subtopic
+  let question1 = `What is the primary purpose of ${subtopic} in ${unit}?`
+  let options1 = [
+    `${subtopic} is used to solve complex problems in ${unit}`,
+    `${subtopic} is unrelated to ${unit}`,
+    `${subtopic} is only used in legacy systems`,
+    `${subtopic} is deprecated in modern ${subject}`
+  ]
+  let correct1 = 0
+  let explanation1 = `${subtopic} is a fundamental concept in ${unit} for ${subject}. It's used extensively in real-world applications and is essential for mastering this topic.`
+  
+  let question2 = `Which of the following best describes ${subtopic}?`
+  let options2 = [
+    `A core concept in ${unit} that helps solve practical problems`,
+    `An outdated technique no longer used`,
+    `Only relevant for beginners`,
+    `Not important for interviews`
+  ]
+  let correct2 = 0
+  let explanation2 = `${subtopic} is a core concept that's frequently tested in technical interviews and used in production systems. Understanding it deeply is crucial for success.`
+  
+  let question3 = `When working with ${subtopic}, what should you focus on?`
+  let options3 = [
+    `Understanding the fundamental principles and practical applications`,
+    `Memorizing syntax without understanding`,
+    `Avoiding it in your code`,
+    `Only learning the basics`
+  ]
+  let correct3 = 0
+  let explanation3 = `To master ${subtopic}, focus on understanding the underlying principles, common patterns, and when to apply it. Practice is key to building proficiency.`
+  
+  // Customize questions based on subtopic keywords
+  if (subtopicLower.includes('introduction') || subtopicLower.includes('intro') || subtopicLower.includes('basics')) {
+    question1 = `What is ${subtopic} in ${subject}?`
+    options1 = [
+      `A fundamental concept that forms the foundation of ${unit}`,
+      `An advanced topic for experts only`,
+      `Not relevant to ${subject}`,
+      `Only used in specific scenarios`
+    ]
+    explanation1 = `${subtopic} is a fundamental building block in ${unit} for ${subject}. It's essential to understand this before moving to advanced topics.`
+    
+    question2 = `Why is ${subtopic} important?`
+    options2 = [
+      `It provides the foundation for understanding more complex concepts`,
+      `It's only used in academic settings`,
+      `It's being replaced by newer concepts`,
+      `It's optional knowledge`
+    ]
+    explanation2 = `${subtopic} is crucial because it establishes the foundation for all advanced topics in ${unit}. Mastering it early makes learning easier.`
+    
+    question3 = `What should you learn first about ${subtopic}?`
+    options3 = [
+      `The basic definition, purpose, and fundamental principles`,
+      `Advanced optimization techniques`,
+      `Only the syntax`,
+      `Nothing, skip to advanced topics`
+    ]
+    explanation3 = `Start with understanding what ${subtopic} is, why it exists, and its basic principles. Build a strong foundation before moving to advanced topics.`
+  } else if (subtopicLower.includes('algorithm') || subtopicLower.includes('sort') || subtopicLower.includes('search')) {
+    question1 = `What is the time complexity of ${subtopic} algorithm?`
+    options1 = [
+      `Depends on the specific implementation, typically O(n log n) for efficient versions`,
+      `Always O(1)`,
+      `Always O(n²)`,
+      `Not applicable`
+    ]
+    explanation1 = `The time complexity of ${subtopic} varies based on implementation. Understanding complexity helps you choose the right algorithm for different scenarios.`
+    
+    question2 = `When should you use ${subtopic}?`
+    options2 = [
+      `When the problem characteristics match the algorithm's strengths`,
+      `Always, regardless of the problem`,
+      `Never, use simpler alternatives`,
+      `Only for small datasets`
+    ]
+    explanation2 = `${subtopic} should be chosen based on problem requirements, data characteristics, and performance needs. Understanding when to use it is key.`
+    
+    question3 = `What is a key advantage of ${subtopic}?`
+    options3 = [
+      `Efficient problem-solving for specific scenarios`,
+      `Works for all problems equally well`,
+      `Simplest to implement`,
+      `No advantages`
+    ]
+    explanation3 = `${subtopic} provides efficient solutions for specific problem types. Understanding its advantages helps you apply it effectively.`
+  } else if (subtopicLower.includes('data structure') || subtopicLower.includes('tree') || subtopicLower.includes('graph') || subtopicLower.includes('list')) {
+    question1 = `What is ${subtopic} used for?`
+    options1 = [
+      `Organizing and storing data efficiently for specific access patterns`,
+      `Only for storing simple values`,
+      `Not used in modern programming`,
+      `Only for academic purposes`
+    ]
+    explanation1 = `${subtopic} is a data structure designed for efficient data organization and access. Understanding its use cases is essential.`
+    
+    question2 = `What operations does ${subtopic} support?`
+    options2 = [
+      `Insertion, deletion, search, and traversal operations`,
+      `Only reading data`,
+      `No operations`,
+      `Only insertion`
+    ]
+    explanation2 = `${subtopic} typically supports multiple operations. Understanding these operations and their time complexity is crucial for effective use.`
+    
+    question3 = `When is ${subtopic} the best choice?`
+    options3 = [
+      `When the access patterns match the data structure's strengths`,
+      `Always, for all scenarios`,
+      `Never, use arrays instead`,
+      `Only for small datasets`
+    ]
+    explanation3 = `Choose ${subtopic} when its characteristics align with your problem's requirements. Understanding trade-offs helps make the right choice.`
+  } else if (subtopicLower.includes('design') || subtopicLower.includes('pattern') || subtopicLower.includes('architecture')) {
+    question1 = `What is the main goal of ${subtopic}?`
+    options1 = [
+      `Creating scalable, maintainable, and efficient systems`,
+      `Making code as complex as possible`,
+      `Avoiding best practices`,
+      `Only for small projects`
+    ]
+    explanation1 = `${subtopic} aims to create well-structured systems that are scalable, maintainable, and follow best practices. This is crucial for production systems.`
+    
+    question2 = `Why is ${subtopic} important in system design?`
+    options2 = [
+      `It helps build systems that can scale and handle real-world requirements`,
+      `It's only for theoretical purposes`,
+      `It makes systems more complex`,
+      `It's not important`
+    ]
+    explanation2 = `${subtopic} is essential for building production-ready systems. Understanding design principles is crucial for system design interviews.`
+    
+    question3 = `What should you consider when applying ${subtopic}?`
+    options3 = [
+      `Scalability, maintainability, performance, and trade-offs`,
+      `Only speed`,
+      `Only simplicity`,
+      `Nothing, just implement`
+    ]
+    explanation3 = `When applying ${subtopic}, consider multiple factors including scalability, maintainability, performance, and the trade-offs involved.`
+  }
+  
+  return [
+    {
+      subject,
+      unit,
+      subtopic,
+      question: question1,
+      options: options1,
+      correctAnswer: correct1,
+      explanation: explanation1,
+      difficulty: 'Basic'
+    },
+    {
+      subject,
+      unit,
+      subtopic,
+      question: question2,
+      options: options2,
+      correctAnswer: correct2,
+      explanation: explanation2,
+      difficulty: 'Medium'
+    },
+    {
+      subject,
+      unit,
+      subtopic,
+      question: question3,
+      options: options3,
+      correctAnswer: correct3,
+      explanation: explanation3,
+      difficulty: 'Medium'
+    }
+  ]
+}
+
+
 
 
 

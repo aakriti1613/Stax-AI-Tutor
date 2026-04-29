@@ -1,12 +1,14 @@
 // Database utilities for marathons
-import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured, getSupabaseAdmin, logConnectionFailure } from '@/lib/supabase'
 import { Marathon, MarathonStatus, ContestLeaderboardEntry } from '@/lib/types/contests'
+import { Domain } from '@/lib/subjects'
 
 export interface MarathonDB {
   id: string
   title: string
   description: string
   status: string
+  domain: Domain
   start_date: string
   end_date: string
   duration: number
@@ -27,19 +29,30 @@ export interface MarathonParticipantDB {
 
 /**
  * Get all marathons
+ * @param domain Optional domain filter
  */
-export async function getMarathons(): Promise<Marathon[]> {
+export async function getMarathons(domain?: Domain): Promise<Marathon[]> {
   if (!isSupabaseConfigured() || !supabase) {
     return []
   }
 
   try {
-    const { data, error } = await supabase
+    let query = supabase!
       .from('marathons')
       .select('*')
-      .order('start_date', { ascending: false })
+    
+    if (domain) {
+      query = query.eq('domain', domain)
+    }
+    
+    const { data, error } = await query.order('start_date', { ascending: false })
 
     if (error) {
+      // Check if it's a network/DNS error
+      if (error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND')) {
+        logConnectionFailure('Supabase connection failed. Marathons unavailable. Check SUPABASE_URL in .env file.')
+        return []
+      }
       console.error('Error getting marathons:', error)
       return []
     }
@@ -47,20 +60,33 @@ export async function getMarathons(): Promise<Marathon[]> {
     // Get participant counts
     const marathonsWithParticipants = await Promise.all(
       (data || []).map(async (marathon) => {
-        const { count } = await supabase
-          .from('marathon_participants')
-          .select('*', { count: 'exact', head: true })
-          .eq('marathon_id', marathon.id)
+        try {
+          const { count } = await supabase!
+            .from('marathon_participants')
+            .select('*', { count: 'exact', head: true })
+            .eq('marathon_id', marathon.id)
 
-        return {
-          ...marathon,
-          participants: count || 0
+          return {
+            ...marathon,
+            participants: count || 0
+          }
+        } catch (err) {
+          // If participant count fails, just return marathon with 0 participants
+          return {
+            ...marathon,
+            participants: 0
+          }
         }
       })
     )
 
     return marathonsWithParticipants.map(convertMarathonFromDB)
-  } catch (error) {
+  } catch (error: any) {
+    // Handle network/DNS errors gracefully
+    if (error?.message?.includes('fetch failed') || error?.message?.includes('ENOTFOUND') || error?.code === 'ENOTFOUND') {
+      logConnectionFailure('Supabase connection failed. Marathons unavailable. Check SUPABASE_URL in .env file.')
+      return []
+    }
     console.error('Error getting marathons:', error)
     return []
   }
@@ -246,22 +272,24 @@ export async function getMarathonLeaderboard(marathonId: string): Promise<Contes
 export async function createMarathon(marathon: {
   title: string
   description: string
+  domain: Domain
   startDate: Date
   endDate: Date
   duration: number
   xpMultiplier: number
 }): Promise<string | null> {
-  const admin = getSupabaseAdmin()
-  if (!admin) {
-    return null
-  }
-
   try {
+    const admin = getSupabaseAdmin()
+    if (!admin) {
+      return null
+    }
+
     const { data, error } = await admin
       .from('marathons')
       .insert({
         title: marathon.title,
         description: marathon.description,
+        domain: marathon.domain,
         status: 'upcoming',
         start_date: marathon.startDate.toISOString(),
         end_date: marathon.endDate.toISOString(),
@@ -272,12 +300,22 @@ export async function createMarathon(marathon: {
       .single()
 
     if (error || !data) {
+      // Check if it's a network/DNS error
+      if (error?.message?.includes('fetch failed') || error?.message?.includes('ENOTFOUND')) {
+        logConnectionFailure('Supabase connection failed. Cannot create marathon. Check SUPABASE_URL in .env file.')
+        return null
+      }
       console.error('Error creating marathon:', error)
       return null
     }
 
     return data.id
-  } catch (error) {
+  } catch (error: any) {
+    // Handle network/DNS errors gracefully
+    if (error?.message?.includes('fetch failed') || error?.message?.includes('ENOTFOUND') || error?.code === 'ENOTFOUND') {
+      logConnectionFailure('Supabase connection failed. Cannot create marathon. Check SUPABASE_URL in .env file.')
+      return null
+    }
     console.error('Error creating marathon:', error)
     return null
   }
@@ -328,6 +366,7 @@ function convertMarathonFromDB(db: any): Marathon {
     title: db.title,
     description: db.description,
     status,
+    domain: db.domain || 'placement', // Default to placement if not set
     startDate,
     endDate,
     xpMultiplier: db.xp_multiplier,

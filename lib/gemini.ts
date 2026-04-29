@@ -866,6 +866,46 @@ export async function generatePersonalizedAssignment(
   }
 }
 
+// Simple helper function for generating text responses (used by Stax AI)
+export async function generateGeminiResponse(prompt: string): Promise<string> {
+  try {
+    const model = await getGeminiModel()
+    
+    // Check if it's a REST model or SDK model
+    if (typeof model.generateContent === 'function') {
+      // SDK model
+      const result = await model.generateContent(prompt)
+      const response = await result.response
+      return response.text()
+    } else {
+      // REST model (custom implementation)
+      const apiKey = getApiKey()
+      const modelName = cachedModelName || 'gemini-2.5-flash'
+      const normalizedModel = normalizeModelName(modelName)
+      const url = `https://generativelanguage.googleapis.com/v1/models/${normalizedModel}:generateContent?key=${apiKey}`
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Gemini API error: ${response.status} - ${errorText}`)
+      }
+
+      const data = await response.json()
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated'
+    }
+  } catch (error: any) {
+    console.error('Error generating Gemini response:', error)
+    throw error
+  }
+}
+
 export async function generateReinforcementMCQ(concept: string, subject: string) {
   const prompt = PROMPT_TEMPLATES.reinforcementMCQ(concept, subject)
   const model = await getGeminiModel()

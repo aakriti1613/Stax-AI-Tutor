@@ -1,6 +1,7 @@
 // Database utilities for standoffs (3v3 team battles)
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { Standoff, DuelStatus, ContestProblem } from '@/lib/types/contests'
+import { Domain } from '@/lib/subjects'
 
 export interface StandoffDB {
   id: string
@@ -11,6 +12,7 @@ export interface StandoffDB {
   team2_member2: string | null
   team2_member3: string | null
   status: string
+  domain: Domain
   problem_id: string
   problem_title: string
   team1_score: number
@@ -25,7 +27,7 @@ export interface StandoffDB {
 /**
  * Create a new standoff team (user creates team and waits for match)
  */
-export async function createStandoffTeam(leaderId: string): Promise<string | null> {
+export async function createStandoffTeam(leaderId: string, domain: Domain): Promise<string | null> {
   if (!isSupabaseConfigured() || !supabase) {
     return null
   }
@@ -41,6 +43,7 @@ export async function createStandoffTeam(leaderId: string): Promise<string | nul
         team2_leader: null,
         team2_member2: null,
         team2_member3: null,
+        domain: domain,
         status: 'pending',
         problem_id: '',
         problem_title: '',
@@ -438,6 +441,7 @@ function convertStandoffFromDB(db: any): Standoff {
     team2,
     team3: [], // Not used in current schema
     status: db.status as DuelStatus,
+    domain: db.domain || 'placement', // Default to placement if not set
     problem,
     team1Solutions: {},
     team2Solutions: {},
@@ -448,5 +452,7 @@ function convertStandoffFromDB(db: any): Standoff {
     xpReward: db.xp_reward || 100
   }
 }
+
+
 
 

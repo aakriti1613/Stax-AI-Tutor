@@ -1,6 +1,7 @@
 // Database utilities for contests
-import { supabase, isSupabaseConfigured, getSupabaseAdmin } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured, getSupabaseAdmin, logConnectionFailure } from '@/lib/supabase'
 import { Contest, ContestProblem, ContestLeaderboardEntry, ContestLevel, ContestStatus } from '@/lib/types/contests'
+import { Domain } from '@/lib/subjects'
 
 export interface ContestDB {
   id: string
@@ -8,6 +9,7 @@ export interface ContestDB {
   description: string
   level: ContestLevel
   status: ContestStatus
+  domain: Domain
   start_date: string
   end_date: string
   xp_multiplier: number
@@ -51,19 +53,30 @@ export interface ContestSubmissionDB {
 
 /**
  * Get all contests
+ * @param domain Optional domain filter
  */
-export async function getContests(): Promise<Contest[]> {
+export async function getContests(domain?: Domain): Promise<Contest[]> {
   if (!isSupabaseConfigured() || !supabase) {
     return []
   }
 
   try {
-    const { data, error } = await supabase
+    let query = supabase!
       .from('contests')
       .select('*')
-      .order('start_date', { ascending: false })
+    
+    if (domain) {
+      query = query.eq('domain', domain)
+    }
+    
+    const { data, error } = await query.order('start_date', { ascending: false })
 
     if (error) {
+      // Check if it's a network/DNS error
+      if (error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND')) {
+        logConnectionFailure('Supabase connection failed. Contests unavailable. Check SUPABASE_URL in .env file.')
+        return []
+      }
       console.error('Error getting contests:', error)
       return []
     }
@@ -71,20 +84,33 @@ export async function getContests(): Promise<Contest[]> {
     // Get participant counts
     const contestsWithParticipants = await Promise.all(
       (data || []).map(async (contest) => {
-        const { count } = await supabase
-          .from('contest_participants')
-          .select('*', { count: 'exact', head: true })
-          .eq('contest_id', contest.id)
+        try {
+          const { count } = await supabase!
+            .from('contest_participants')
+            .select('*', { count: 'exact', head: true })
+            .eq('contest_id', contest.id)
 
-        return {
-          ...contest,
-          participants: count || 0
+          return {
+            ...contest,
+            participants: count || 0
+          }
+        } catch (err) {
+          // If participant count fails, just return contest with 0 participants
+          return {
+            ...contest,
+            participants: 0
+          }
         }
       })
     )
 
     return contestsWithParticipants.map(convertContestFromDB)
-  } catch (error) {
+  } catch (error: any) {
+    // Handle network/DNS errors gracefully
+    if (error?.message?.includes('fetch failed') || error?.message?.includes('ENOTFOUND') || error?.code === 'ENOTFOUND') {
+      logConnectionFailure('Supabase connection failed. Contests unavailable. Check SUPABASE_URL in .env file.')
+      return []
+    }
     console.error('Error getting contests:', error)
     return []
   }
@@ -282,23 +308,25 @@ export async function createContest(contest: {
   title: string
   description: string
   level: ContestLevel
+  domain: Domain
   startDate: Date
   endDate: Date
   xpMultiplier: number
   maxParticipants?: number
 }): Promise<string | null> {
-  const admin = getSupabaseAdmin()
-  if (!admin) {
-    return null
-  }
-
   try {
+    const admin = getSupabaseAdmin()
+    if (!admin) {
+      return null
+    }
+
     const { data, error } = await admin
       .from('contests')
       .insert({
         title: contest.title,
         description: contest.description,
         level: contest.level,
+        domain: contest.domain,
         status: 'upcoming',
         start_date: contest.startDate.toISOString(),
         end_date: contest.endDate.toISOString(),
@@ -309,12 +337,22 @@ export async function createContest(contest: {
       .single()
 
     if (error || !data) {
+      // Check if it's a network/DNS error
+      if (error?.message?.includes('fetch failed') || error?.message?.includes('ENOTFOUND')) {
+        logConnectionFailure('Supabase connection failed. Cannot create contest. Check SUPABASE_URL in .env file.')
+        return null
+      }
       console.error('Error creating contest:', error)
       return null
     }
 
     return data.id
-  } catch (error) {
+  } catch (error: any) {
+    // Handle network/DNS errors gracefully
+    if (error?.message?.includes('fetch failed') || error?.message?.includes('ENOTFOUND') || error?.code === 'ENOTFOUND') {
+      logConnectionFailure('Supabase connection failed. Cannot create contest. Check SUPABASE_URL in .env file.')
+      return null
+    }
     console.error('Error creating contest:', error)
     return null
   }
@@ -383,6 +421,7 @@ function convertContestFromDB(db: any): Contest {
     description: db.description,
     level: db.level,
     status,
+    domain: db.domain || 'placement', // Default to placement if not set
     startDate,
     endDate,
     xpMultiplier: db.xp_multiplier,

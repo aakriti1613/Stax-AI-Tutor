@@ -7,6 +7,8 @@ import axios from 'axios'
 import { Play, Loader2, AlertCircle, Lightbulb, Trophy, ArrowRight, RotateCcw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import confetti from 'canvas-confetti'
+import { DOMAINS } from '@/lib/subjects'
+import FrontendEditor from './FrontendEditor'
 
 // Dynamically import Monaco to avoid SSR issues
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -49,9 +51,21 @@ interface CodingChallengeProps {
 
 type Difficulty = 'Basic' | 'Medium' | 'Advanced'
 
+// Check if subject is in frontend or backend domain
+function isFrontendOrBackendSubject(subject: string): boolean {
+  const frontendSubjects = DOMAINS.frontend.subjects
+  const backendSubjects = DOMAINS.backend.subjects
+  const subjectLower = subject.toLowerCase()
+  
+  return frontendSubjects.some(s => s.toLowerCase() === subjectLower) ||
+         backendSubjects.some(s => s.toLowerCase() === subjectLower)
+}
+
 export default function CodingChallenge({ subject, unit, subtopic, difficulty: propDifficulty, onComplete }: CodingChallengeProps) {
   const [problem, setProblem] = useState<CodingProblem | null>(null)
+  const [frontendQuestion, setFrontendQuestion] = useState<any>(null)
   const [difficulty, setDifficulty] = useState<Difficulty>(propDifficulty || 'Basic')
+  const [isFrontendBackend, setIsFrontendBackend] = useState(false)
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(true)
   const [executing, setExecuting] = useState(false)
@@ -168,9 +182,50 @@ public class Solution {
   const [language, setLanguage] = useState('python')
 
   useEffect(() => {
-    fetchProblem()
-    setCode(languageTemplates[language])
-  }, [difficulty])
+    const isFrontendBackend = isFrontendOrBackendSubject(subject)
+    setIsFrontendBackend(isFrontendBackend)
+    
+    if (isFrontendBackend) {
+      fetchFrontendBackendQuestion()
+    } else {
+      fetchProblem()
+      setCode(languageTemplates[language])
+    }
+  }, [difficulty, subject, unit, subtopic])
+
+  const fetchFrontendBackendQuestion = async () => {
+    try {
+      setLoading(true)
+      const subtopicName = subtopic || 'intro'
+      
+      console.log('💻 Fetching frontend/backend question:', { subject, unit, subtopic: subtopicName, difficulty })
+      
+      const response = await axios.get('/api/questions/frontend-backend', {
+        params: {
+          subject,
+          unit,
+          subtopic: subtopicName,
+          difficulty,
+          random: 'true'
+        }
+      })
+      
+      if (response.data && response.data.question) {
+        console.log('✅ Received question:', response.data.question.title)
+        setFrontendQuestion(response.data.question)
+        setError(null)
+      } else {
+        throw new Error('No question found')
+      }
+    } catch (error: any) {
+      console.error('Error fetching question:', error)
+      const errorMsg = error.response?.data?.error || error.message || 'Failed to load question'
+      toast.error(errorMsg)
+      setFrontendQuestion(null)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const fetchProblem = async () => {
     try {
@@ -347,6 +402,44 @@ public class Solution {
     if (problem && currentHintIndex < problem.hints.length - 1) {
       setCurrentHintIndex(currentHintIndex + 1)
     }
+  }
+
+  // Show FrontendEditor for frontend/backend subjects
+  if (isFrontendBackend) {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          >
+            <Loader2 className="w-12 h-12 text-neon-cyan" />
+          </motion.div>
+        </div>
+      )
+    }
+
+    if (!frontendQuestion) {
+      return (
+        <div className="glass-card p-8 text-center">
+          <p className="text-red-400">Failed to load question</p>
+          <button onClick={fetchFrontendBackendQuestion} className="btn-primary mt-4">
+            Retry
+          </button>
+        </div>
+      )
+    }
+
+    return (
+      <FrontendEditor
+        subject={subject}
+        unit={unit}
+        subtopic={subtopic || 'intro'}
+        difficulty={difficulty}
+        question={frontendQuestion}
+        onComplete={onComplete}
+      />
+    )
   }
 
   if (loading) {

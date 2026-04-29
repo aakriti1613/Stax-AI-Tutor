@@ -7,6 +7,9 @@ import axios from 'axios'
 import { Play, Loader2, AlertCircle, Lightbulb, CheckCircle2, Sparkles, Target } from 'lucide-react'
 import toast from 'react-hot-toast'
 import confetti from 'canvas-confetti'
+import FrontendPreview from './FrontendPreview'
+import FrontendEditor from './FrontendEditor'
+import { DOMAINS } from '@/lib/subjects'
 
 // Dynamically import Monaco to avoid SSR issues
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -69,14 +72,92 @@ export default function PersonalizedAssignment({
   const [sqlRowCount, setSqlRowCount] = useState(0)
   const [currentHintIndex, setCurrentHintIndex] = useState(0)
   const [showHints, setShowHints] = useState(false)
+  const [frontendPreview, setFrontendPreview] = useState<{ html?: string; css?: string; javascript?: string; react?: string; language: string } | null>(null)
 
   // Check if subject is DBMS/SQL
   const isDBMS = subject.toLowerCase().includes('database') || 
                  subject.toLowerCase().includes('dbms') || 
                  subject.toLowerCase().includes('sql')
 
+  // Check if subject is in frontend or backend domain
+  const isFrontendBackend = (() => {
+    const frontendSubjects = DOMAINS.frontend.subjects
+    const backendSubjects = DOMAINS.backend.subjects
+    const subjectLower = subject.toLowerCase()
+    
+    return frontendSubjects.some(s => s.toLowerCase() === subjectLower) ||
+           backendSubjects.some(s => s.toLowerCase() === subjectLower)
+  })()
+
+  const [frontendQuestion, setFrontendQuestion] = useState<any>(null)
+
   // Language templates with input reading
   const languageTemplates: Record<string, string> = {
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Page</title>
+</head>
+<body>
+  <h1>Hello World!</h1>
+</body>
+</html>`,
+    css: `/* Your CSS here */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}`,
+    javascript: `// Your JavaScript here
+console.log('Hello World!');`,
+    react: `import React from 'react';
+
+function App() {
+  return (
+    <div>
+      <h1>Hello World!</h1>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));`,
+    nodejs: `// Node.js code
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Hello World!');
+});
+
+server.listen(3000, () => {
+  console.log('Server running on port 3000');
+});`,
+    express: `const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});`,
+    django: `from django.http import HttpResponse
+
+def hello(request):
+    return HttpResponse("Hello World!")`,
+    flask: `from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return 'Hello World!'
+
+if __name__ == '__main__':
+    app.run()`,
     python: `# Read input from stdin
 import sys
 import json
@@ -172,7 +253,23 @@ public class Solution {
 -- Example: SELECT * FROM employees;`
   }
 
-  const [language, setLanguage] = useState(isDBMS ? 'sql' : 'python')
+  // Determine initial language based on subject
+  const getInitialLanguage = (): string => {
+    if (isDBMS) return 'sql'
+    const subjectLower = subject.toLowerCase()
+    if (subjectLower.includes('frontend') || subjectLower.includes('html') || subjectLower.includes('react') || subjectLower.includes('angular')) {
+      return 'html'
+    }
+    if (subjectLower.includes('backend') || subjectLower.includes('node') || subjectLower.includes('express') || subjectLower.includes('django') || subjectLower.includes('flask')) {
+      return 'python'
+    }
+    if (subjectLower.includes('machine learning') || subjectLower.includes('ml') || subjectLower.includes('deep learning')) {
+      return 'python'
+    }
+    return 'python'
+  }
+  
+  const [language, setLanguage] = useState(getInitialLanguage())
 
   useEffect(() => {
     fetchAssignment()
@@ -205,6 +302,44 @@ public class Solution {
   const fetchAssignment = async () => {
     try {
       setLoading(true)
+      
+      // For frontend/backend, use the questions API
+      if (isFrontendBackend) {
+        const masteryLevel = calculateMasteryLevel()
+        // Map numeric mastery score (0-1) to difficulty
+        const difficulty = masteryLevel < 0.4 ? 'Basic' :
+                          masteryLevel < 0.75 ? 'Medium' : 'Advanced'
+        
+        console.log('📚 Fetching frontend/backend question...', {
+          subject,
+          unit,
+          subtopic,
+          difficulty
+        })
+
+        const response = await axios.get('/api/questions/frontend-backend', {
+          params: {
+            subject,
+            unit,
+            subtopic,
+            difficulty,
+            random: 'true'
+          }
+        })
+
+        if (response.data?.question) {
+          console.log('✅ Question received:', response.data.question.title)
+          setFrontendQuestion(response.data.question)
+          setError(null)
+          setCompleted(false)
+          toast.success('Question loaded!')
+        } else {
+          throw new Error(response.data?.error || 'No question found')
+        }
+        return
+      }
+
+      // For other subjects, use the existing Gemini API
       const masteryLevel = calculateMasteryLevel()
       const performanceMetrics = getPerformanceMetrics()
 
@@ -265,6 +400,52 @@ public class Solution {
     }
   }
 
+  // Detect language type for proper execution
+  const getLanguageType = (lang: string, subj: string): string => {
+    const subjectLower = subj.toLowerCase()
+    
+    // Frontend languages
+    if (['html', 'css', 'javascript', 'js'].includes(lang) || 
+        subjectLower.includes('frontend') || 
+        subjectLower.includes('html') || 
+        subjectLower.includes('react') || 
+        subjectLower.includes('angular') ||
+        subjectLower.includes('vue')) {
+      if (lang === 'javascript' || lang === 'js') return 'javascript'
+      if (subjectLower.includes('react')) return 'react'
+      return lang
+    }
+    
+    // Backend languages
+    if (['nodejs', 'node', 'express', 'django', 'flask'].includes(lang) ||
+        subjectLower.includes('backend') ||
+        subjectLower.includes('node') ||
+        subjectLower.includes('express') ||
+        subjectLower.includes('django') ||
+        subjectLower.includes('flask')) {
+      if (lang === 'node' || lang === 'nodejs') return 'nodejs'
+      return lang
+    }
+    
+    // ML languages
+    if (subjectLower.includes('machine learning') ||
+        subjectLower.includes('ml') ||
+        subjectLower.includes('deep learning') ||
+        subjectLower.includes('neural') ||
+        subjectLower.includes('tensorflow') ||
+        subjectLower.includes('pytorch')) {
+      return 'ml-python'
+    }
+    
+    // SQL
+    if (lang === 'sql' || isDBMS) {
+      return 'sql'
+    }
+    
+    // Default to regular languages
+    return lang
+  }
+
   const handleRunCode = async () => {
     if (!code.trim()) {
       toast.error('Please write some code first!')
@@ -280,8 +461,10 @@ public class Solution {
     setTestResults([])
 
     try {
+      const languageType = getLanguageType(language, subject)
+      
       // For DBMS/SQL, use SQL execution endpoint
-      if (isDBMS && language === 'sql') {
+      if (languageType === 'sql') {
         // SQL execution for assignments
         // Use a default schema for SQL assignments (employees table)
         const defaultSchema = `
@@ -354,22 +537,26 @@ public class Solution {
         }
         return
       } else {
-        // Regular code execution for Python/C++/Java
+        // Use unified code execution API for all languages
         if (!assignment.testCases || assignment.testCases.length === 0) {
           toast.error('No test cases available')
           setExecuting(false)
           return
         }
 
-        // Execute code against all test cases (one by one, like CodingChallenge does)
+        // Execute code against all test cases
         const results = await Promise.all(
           assignment.testCases.map(async (testCase) => {
             try {
-              const response = await axios.post('/api/judge0/execute', {
+              const response = await axios.post('/api/code/execute', {
                 code,
-                language,
+                language: languageType,
                 stdin: testCase.input,
                 expectedOutput: testCase.output,
+                context: languageType === 'sql' ? {
+                  schema: (assignment.testCases?.[0] as any)?.schema,
+                  seedData: (assignment.testCases?.[0] as any)?.seedData
+                } : undefined
               })
 
               const executionResult = response.data.result
@@ -434,6 +621,58 @@ public class Solution {
     } finally {
       setExecuting(false)
     }
+  }
+
+  // Show FrontendEditor for frontend/backend subjects
+  if (isFrontendBackend) {
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center"
+          >
+            <Loader2 className="w-16 h-16 text-neon-cyan animate-spin mx-auto mb-4" />
+            <p className="text-xl text-gray-400">Loading question...</p>
+          </motion.div>
+        </div>
+      )
+    }
+
+    if (!frontendQuestion) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card p-8 max-w-2xl text-center"
+          >
+            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-4">Failed to Load Question</h2>
+            <p className="text-gray-400 mb-6">{error || 'No question found for this topic'}</p>
+            <button onClick={fetchAssignment} className="btn-primary">
+              Try Again
+            </button>
+          </motion.div>
+        </div>
+      )
+    }
+
+    const masteryLevel = calculateMasteryLevel()
+    const difficulty = masteryLevel < 0.4 ? 'Basic' :
+                      masteryLevel < 0.75 ? 'Medium' : 'Advanced'
+
+    return (
+      <FrontendEditor
+        subject={subject}
+        unit={unit}
+        subtopic={subtopic}
+        difficulty={difficulty}
+        question={frontendQuestion}
+        onComplete={onComplete}
+      />
+    )
   }
 
   if (loading) {
@@ -583,12 +822,32 @@ public class Solution {
                 value={language}
                 onChange={(e) => {
                   setLanguage(e.target.value)
-                  setCode(languageTemplates[e.target.value])
+                  setCode(languageTemplates[e.target.value] || '')
+                  setFrontendPreview(null) // Clear preview on language change
                 }}
                 className="bg-dark-card border border-gray-700 rounded-lg px-4 py-2 text-white"
               >
                 {isDBMS ? (
                   <option value="sql">SQL</option>
+                ) : subject.toLowerCase().includes('frontend') || subject.toLowerCase().includes('html') || subject.toLowerCase().includes('react') || subject.toLowerCase().includes('angular') ? (
+                  <>
+                    <option value="html">HTML</option>
+                    <option value="css">CSS</option>
+                    <option value="javascript">JavaScript</option>
+                    {subject.toLowerCase().includes('react') && <option value="react">React</option>}
+                  </>
+                ) : subject.toLowerCase().includes('backend') || subject.toLowerCase().includes('node') || subject.toLowerCase().includes('express') || subject.toLowerCase().includes('django') || subject.toLowerCase().includes('flask') ? (
+                  <>
+                    <option value="python">Python</option>
+                    <option value="nodejs">Node.js</option>
+                    <option value="express">Express.js</option>
+                    <option value="django">Django</option>
+                    <option value="flask">Flask</option>
+                  </>
+                ) : subject.toLowerCase().includes('machine learning') || subject.toLowerCase().includes('ml') || subject.toLowerCase().includes('deep learning') ? (
+                  <>
+                    <option value="python">Python (ML)</option>
+                  </>
                 ) : (
                   <>
                     <option value="python">Python</option>
@@ -731,6 +990,17 @@ public class Solution {
               </table>
             </div>
           </motion.div>
+        )}
+
+        {/* Frontend Preview */}
+        {frontendPreview && (
+          <FrontendPreview
+            html={frontendPreview.html}
+            css={frontendPreview.css}
+            javascript={frontendPreview.javascript}
+            react={frontendPreview.react}
+            language={frontendPreview.language}
+          />
         )}
 
         {/* Test Results */}

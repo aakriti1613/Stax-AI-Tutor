@@ -105,3 +105,5 @@ export async function syncBadgesToDatabase(userId: string, badges: Badge[]): Pro
 }
 
 
+
+

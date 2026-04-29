@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Home, Trophy, Sword, Flame, User, BookOpen, Users } from 'lucide-react'
+import { Home, Trophy, Sword, Flame, User, BookOpen, Users, CreditCard, Briefcase } from 'lucide-react'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -12,6 +12,8 @@ export default function Navigation() {
   const navItems = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/profile', label: 'Profile', icon: User },
+    { href: '/pricing', label: 'Pricing', icon: CreditCard },
+    { href: '/interviews', label: 'Interviews', icon: Briefcase },
     { href: '/contests', label: 'Contests', icon: Trophy },
     { href: '/duels', label: 'Duels', icon: Sword },
     { href: '/standoffs', label: 'Standoffs', icon: Users },

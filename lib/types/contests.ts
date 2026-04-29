@@ -1,4 +1,5 @@
 // Contest and Competition Types
+import { Domain } from '@/lib/subjects'
 
 export type ContestLevel = 'city' | 'state' | 'national'
 export type ContestStatus = 'upcoming' | 'active' | 'ended'
@@ -11,6 +12,7 @@ export interface Contest {
   description: string
   level: ContestLevel
   status: ContestStatus
+  domain: Domain // Domain-specific contest
   startDate: Date
   endDate: Date
   xpMultiplier: number
@@ -45,6 +47,7 @@ export interface Duel {
   opponentId: string
   opponentName: string
   status: DuelStatus
+  domain: Domain // Domain-specific duel
   problem: ContestProblem
   challengerSolution?: string
   opponentSolution?: string
@@ -60,6 +63,7 @@ export interface Standoff {
   team2: string[]
   team3: string[]
   status: DuelStatus
+  domain: Domain // Domain-specific standoff
   problem: ContestProblem
   team1Solutions: Record<string, string>
   team2Solutions: Record<string, string>
@@ -75,6 +79,7 @@ export interface Marathon {
   title: string
   description: string
   status: MarathonStatus
+  domain: Domain // Domain-specific marathon
   startDate: Date
   endDate: Date
   xpMultiplier: number
@@ -83,5 +88,16 @@ export interface Marathon {
   participants: number
   leaderboard: ContestLeaderboardEntry[]
 }
+
+
+
+
+
+
+
+
+
+
+
 
 

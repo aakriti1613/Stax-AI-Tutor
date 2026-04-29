@@ -1126,6 +1126,614 @@ SELECT * FROM Students;
       'DBMS provides data independence, integrity, and concurrent access',
       'Understanding DBMS architecture helps in effective database design'
     ]
+  },
+
+  // OS - OS Introduction - What is OS?
+  'os-introduction-what-is-os': {
+    title: 'What is an Operating System (OS)?',
+    overview:
+      'An operating system (OS) is the core software that manages hardware and provides services for application programs. Understanding OS concepts like processes, memory, and scheduling is critical for system-level thinking and placement interviews.',
+    sections: [
+      {
+        heading: 'Role of an Operating System',
+        content: `An Operating System acts as a bridge between the user, application programs, and the hardware.
+
+Key Responsibilities:
+- Process Management: Creates, schedules, and terminates processes
+- Memory Management: Allocates and deallocates memory safely
+- File System Management: Organizes data on storage devices
+- Device Management: Manages I/O devices using drivers
+- Security and Protection: Controls access to system resources
+
+Without an OS, every application would have to manage hardware directly, making systems complex and unsafe. The OS centralizes these responsibilities and exposes a clean interface to programs.`,
+        codeExample: `// Conceptual view (not real code)
+// User Program -> System Call -> Operating System -> Hardware
+
+readFile(\"notes.txt\")   // High-level API
+  ↓
+System Call: read()
+  ↓
+OS: locates file blocks on disk, manages buffers, handles errors
+  ↓
+Disk Controller + Hardware`,
+        visualDescription:
+          'Visual: Three-layer diagram - User & Applications at the top, Operating System in the middle, Hardware at the bottom, with arrows showing requests flowing through the OS.'
+      },
+      {
+        heading: 'Services Provided by an OS',
+        content: `From a user's and programmer's perspective, the OS provides several important services:
+
+User-Oriented Services:
+- Program Execution: Load, run, and terminate programs
+- I/O Operations: Standard input/output streams, device access
+- File Manipulation: Create, delete, read, write, and rename files
+- Error Detection: Detect and handle hardware and software errors
+
+System-Oriented Services:
+- Resource Allocation: Fair distribution of CPU, memory, and I/O
+- Accounting: Tracking resource usage (time, memory, disk)
+- Protection: Preventing one process from harming another
+
+In interviews, you are often asked to list these services and explain them with real-world analogies (for example, OS as a manager allocating meeting rooms, time slots, and storage).`,
+        codeExample: `// Example: OS services visible in a typical C program
+int main() {
+    // 1. Program execution (OS loads this program)
+    // 2. I/O operations (printf uses OS system calls under the hood)
+    printf(\"Hello from OS-managed program!\\n\");
+
+    // 3. Memory management (malloc/free managed by OS + runtime)
+    int *arr = (int*)malloc(10 * sizeof(int));
+    // ...
+    free(arr);
+
+    return 0;  // OS cleans up process resources
+}`,
+        visualDescription:
+          'Visual: Table with two columns: "User Services" and "System Services", each listing key OS services with icons (CPU, memory chip, disk, shield).'
+      },
+      {
+        heading: 'Types of Operating Systems',
+        content: `Different systems use different kinds of operating systems, optimized for their use cases.
+
+Common Types:
+- Batch OS: Jobs processed in batches with little user interaction (early mainframes)
+- Time-Sharing / Multi-User OS: Multiple users share the CPU using time slices (Unix, Linux)
+- Multi-Programming OS: Multiple programs loaded in memory to improve CPU utilization
+- Real-Time OS (RTOS): Strict timing guarantees, used in embedded systems and critical control systems
+- Mobile OS: Optimized for touch, power usage, and apps (Android, iOS)
+
+For interviews, you should be able to:
+- Define each type briefly
+- Give 1–2 examples
+- Explain where it is used in the real world.`,
+        codeExample: `// Pseudo configuration examples (conceptual)
+// Desktop / Server
+OS = \"Linux (time-sharing, multi-user)\";
+
+// Embedded Controller
+OS = \"Real-Time OS (RTOS) with strict timing\";
+
+// Smartphone
+OS = \"Android / iOS (mobile OS)\";`,
+        visualDescription:
+          'Visual: Timeline showing CPU time slices for different users (time-sharing), contrasted with a single dedicated job in a batch system, plus icons representing desktop, embedded device, and smartphone.'
+      }
+    ],
+    keyTakeaways: [
+      'An Operating System is the main software that manages hardware and provides services to programs',
+      'Key OS responsibilities include process, memory, file, device, and security management',
+      'The OS offers user-level services (program execution, I/O, files) and system-level services (allocation, accounting, protection)',
+      'Different types of OS (batch, time-sharing, real-time, mobile) are optimized for different environments'
+    ]
+  },
+
+  // CN - Networks Introduction - Network Basics
+  'cn-introduction-network-basics': {
+    title: 'Network Basics',
+    overview:
+      'Computer networks connect devices to share data and resources. Understanding basic networking concepts is essential for system design, backend development, and many interview questions.',
+    sections: [
+      {
+        heading: 'What is a Computer Network?',
+        content: `A computer network is a collection of interconnected devices (nodes) that communicate and share resources.
+
+Core Ideas:
+- Nodes: Computers, servers, routers, switches, IoT devices
+- Links: Physical (cables, fiber) or wireless (Wi‑Fi, cellular)
+- Data: Packets carrying information between nodes
+
+Goals of Networking:
+- Resource Sharing: Printers, files, internet connection
+- Communication: Email, messaging, video calls
+- Reliability: Redundant paths and fault tolerance
+- Scalability: Add more devices without redesigning everything`,
+        codeExample: `// Everyday examples of networks (conceptual)
+HomeNetwork = {
+  devices: ['Laptop', 'Phone', 'Smart TV'],
+  medium: 'Wi‑Fi / Ethernet',
+  router: 'Home Wi‑Fi Router',
+  internet: true
+}
+
+OfficeNetwork = {
+  devices: ['Developer PCs', 'Servers', 'Printers'],
+  medium: 'Ethernet + Wi‑Fi',
+  topology: 'Star / Hierarchical',
+  internet: true
+}`,
+        visualDescription:
+          'Visual: Simple diagram with multiple devices (laptop, phone, server) connected to a router, which connects to the internet cloud.'
+      },
+      {
+        heading: 'Basic Network Terminology',
+        content: `Key terms you must know for interviews:
+
+- Host: Any device that sends/receives data on the network
+- IP Address: Logical address that identifies a host on a network
+- MAC Address: Physical address of a network interface card (NIC)
+- Port: Logical endpoint used to identify specific applications (e.g., port 80 for HTTP)
+- Bandwidth: Maximum data transfer rate of a link
+- Latency: Time taken for data to travel from source to destination
+
+Interviewers often expect you to define these in simple language and give a quick example (e.g., IP address is like a house address, port is like a flat number).`,
+        codeExample: `// Example: A backend service listening on a TCP port
+// Host IP: 192.168.1.10, Port: 8080
+
+// Pseudo-code
+startServer({
+  host: '192.168.1.10',
+  port: 8080
+});
+
+// Client connects to <IP, Port> pair to talk to the service`,
+        visualDescription:
+          'Visual: Diagram showing a host with IP address and ports, plus arrows showing data flowing between two hosts over a network link.'
+      },
+      {
+        heading: 'Network Classification and Topologies',
+        content: `Networks are categorized by size and layout:
+
+By Size:
+- LAN (Local Area Network): Small area (home, office, lab)
+- MAN (Metropolitan Area Network): City‑scale networks
+- WAN (Wide Area Network): Large geographic area (internet)
+
+By Topology (Physical/Logical Layout):
+- Bus: All devices share a single communication line
+- Star: All devices connect to a central switch/hub
+- Ring: Each device connects to two others, forming a ring
+- Mesh: Devices interconnect with many redundant paths
+
+These concepts come up in both theory questions and system design discussions (for example, how data centers are networked).`,
+        codeExample: `// Conceptual summary
+Network1 = 'Office LAN using Star topology with a central switch';
+Network2 = 'ISP WAN connecting multiple cities using Mesh / Hierarchical design';`,
+        visualDescription:
+          'Visual: Multiple small diagrams for LAN/MAN/WAN and bus/star/ring topologies, each labeled with a short description.'
+      }
+    ],
+    keyTakeaways: [
+      'A computer network connects devices to share data and resources',
+      'Key networking terms include host, IP address, MAC address, port, bandwidth, and latency',
+      'Networks are classified by size (LAN, MAN, WAN) and topology (bus, star, ring, mesh)',
+      'Networking fundamentals are important for backend, DevOps, and system design interviews'
+    ]
+  },
+
+  // System Design - Introduction - What is System Design?
+  'system-design-introduction-what-is-sd': {
+    title: 'What is System Design?',
+    overview:
+      'System Design is about designing large‑scale software systems that are scalable, reliable, and maintainable. It combines data structures/algorithms with real‑world constraints like latency, throughput, and cost.',
+    sections: [
+      {
+        heading: 'Why System Design Matters',
+        content: `In product‑based companies, system design is a separate interview round focused on how you architect complex systems.
+
+What System Design Covers:
+- Breaking requirements into clear functional and non‑functional requirements
+- Choosing the right architecture (monolith, microservices, layered, event‑driven)
+- Selecting appropriate data stores (SQL, NoSQL, caches, message queues)
+- Handling scale, failures, and security
+
+Examples of System Design Problems:
+- Design a URL shortener
+- Design an Instagram‑like feed
+- Design a chat application
+
+Interviewers are less interested in perfect code and more in your reasoning, trade‑offs, and clarity of thought.`,
+        codeExample: `// High-level steps when faced with a system design problem
+1. Clarify requirements (features, scale, constraints)
+2. Define APIs and core data models
+3. Propose a high-level architecture (clients, gateways, services, databases)
+4. Discuss data partitioning, caching, and consistency
+5. Address bottlenecks, failures, and monitoring`,
+        visualDescription:
+          'Visual: Block diagram showing clients, load balancer, application servers, databases, cache, and message queue with arrows for data flow.'
+      },
+      {
+        heading: 'Core Building Blocks in System Design',
+        content: `Most system design problems reuse a common set of building blocks:
+
+- Load Balancers: Distribute traffic across multiple servers
+- Application Servers / Microservices: Implement business logic
+- Databases: Relational (consistency, transactions) and NoSQL (scale, flexibility)
+- Caches: In‑memory stores (Redis, Memcached) to speed up reads
+- Message Queues: Decouple producers and consumers (Kafka, RabbitMQ)
+- CDN: Serve static content closer to users
+
+Knowing what each component does and when to use it is more important than knowing exact configuration flags.`,
+        codeExample: `// Pseudo deployment description
+System = {
+  clients: ['Web', 'Mobile'],
+  entry: 'API Gateway + Load Balancer',
+  services: ['UserService', 'FeedService', 'NotificationService'],
+  storage: ['PostgreSQL', 'Redis Cache'],
+  async: ['Kafka Topic for events']
+}`,
+        visualDescription:
+          'Visual: Layered architecture diagram with client layer, API gateway, services layer, data layer (DB + cache), and async layer (queue).'
+      },
+      {
+        heading: 'Thinking in Trade‑offs',
+        content: `System design is never about a single "correct" answer, but about trade‑offs.
+
+Key Trade‑offs:
+- Consistency vs Availability (CAP theorem)
+- Latency vs Throughput
+- Simplicity vs Flexibility
+- Strong schema (SQL) vs flexible schema (NoSQL)
+
+For interviews:
+- Always state assumptions and constraints
+- Justify your choices (\"I prefer strong consistency here because...\" or \"I choose eventual consistency because...\")
+- Be ready to discuss how you would evolve the design as scale increases.`,
+        codeExample: `// Example trade-off comment (pseudo)
+// Using Redis cache to reduce read latency from ~100 ms (DB) to ~5 ms (cache),
+// accepting eventual consistency for non-critical counters like view counts.`,
+        visualDescription:
+          'Visual: Two‑axis chart showing trade‑offs (e.g., consistency vs availability), with points representing different designs.'
+      }
+    ],
+    keyTakeaways: [
+      'System Design focuses on architecting large‑scale, reliable, and maintainable systems',
+      'Typical interview problems ask you to design real products like chat apps, feeds, or URL shorteners',
+      'Core building blocks include load balancers, services, databases, caches, queues, and CDNs',
+      'Good answers emphasize clear requirements, sensible architecture, and well‑explained trade‑offs'
+    ]
+  },
+
+  // Frontend - HTML Basics - Introduction to HTML
+  'html-basics-intro': {
+    title: 'Introduction to HTML',
+    overview:
+      'HTML (HyperText Markup Language) is the standard language for structuring content on the web. Every web page you see in a browser is built on top of HTML.',
+    sections: [
+      {
+        heading: 'What is HTML?',
+        content: `HTML defines the structure and meaning of content in a web page.
+
+Key Concepts:
+- Elements: Building blocks written as tags (for example, <p>, <h1>, <a>)
+- Attributes: Extra information inside tags (for example, href, src, alt)
+- Document Structure: html, head, and body tags
+
+HTML is not a programming language; it is a markup language. It tells the browser what each part of the page represents: a heading, a paragraph, an image, a link, etc.`,
+        codeExample: `<!DOCTYPE html>
+<html>
+  <head>
+    <title>My First Page</title>
+  </head>
+  <body>
+    <h1>Hello, World!</h1>
+    <p>This is my first HTML page.</p>
+    <a href=\"https://example.com\">Visit a site</a>
+  </body>
+</html>`,
+        visualDescription:
+          'Visual: Browser window on the right showing the rendered page, and the HTML source on the left with arrows mapping headings, paragraphs, and links.'
+      },
+      {
+        heading: 'Basic Page Structure',
+        content: `A minimal HTML page follows a predictable structure:
+
+- <!DOCTYPE html>: Tells the browser to use modern HTML5
+- <html>: Root element of the page
+- <head>: Metadata (title, charset, styles, scripts)
+- <body>: Visible content (text, images, forms, etc.)
+
+Understanding this structure is essential before learning CSS and JavaScript.`,
+        codeExample: `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=\"UTF-8\">
+    <title>Structure Demo</title>
+  </head>
+  <body>
+    <h1>Page Title</h1>
+    <p>Content goes here.</p>
+  </body>
+</html>`,
+        visualDescription:
+          'Visual: Tree diagram showing html at the root, with head and body as children, and content elements nested under body.'
+      }
+    ],
+    keyTakeaways: [
+      'HTML is the markup language that defines the structure of web pages',
+      'An HTML document is built from elements, attributes, and a fixed page structure',
+      'Learning HTML well makes it easier to understand CSS and JavaScript on top of it'
+    ]
+  },
+
+  // Frontend - CSS Basics - Introduction to CSS
+  'css-basics-intro': {
+    title: 'Introduction to CSS',
+    overview:
+      'CSS (Cascading Style Sheets) controls the visual presentation of HTML. It allows you to style text, layout, colors, and responsive behavior.',
+    sections: [
+      {
+        heading: 'What is CSS?',
+        content: `CSS separates content (HTML) from presentation (styles).
+
+With CSS you can:
+- Change colors, fonts, and spacing
+- Create layouts (flexbox, grid)
+- Add animations and transitions
+- Make pages responsive on different screen sizes`,
+        codeExample: `/* Example: Basic CSS */
+body {
+  font-family: system-ui, sans-serif;
+  background-color: #0b1120;
+  color: #e5e7eb;
+}
+
+h1 {
+  color: #22d3ee;
+}
+
+button.primary {
+  background: #22c55e;
+  color: #020617;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}`,
+        visualDescription:
+          'Visual: Before/after comparison of a plain HTML page vs the same page after applying CSS styles.'
+      },
+      {
+        heading: 'Selectors and the Box Model',
+        content: `Two foundational ideas in CSS:
+
+Selectors:
+- Select elements to style (element, class, id selectors)
+- Example: p, .btn-primary, #main
+
+Box Model:
+- Every element is a rectangular box: content, padding, border, margin
+- Understanding the box model is crucial to debug layout issues.`,
+        codeExample: `/* Selectors */
+p {
+  margin-bottom: 1rem;
+}
+
+.btn-primary {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+}
+
+#main {
+  max-width: 800px;
+  margin: 0 auto;
+}`,
+        visualDescription:
+          'Visual: Diagram of the CSS box model, labeling content, padding, border, and margin, plus arrows showing how selectors target elements.'
+      }
+    ],
+    keyTakeaways: [
+      'CSS styles HTML to control colors, fonts, spacing, and layout',
+      'Selectors choose which elements to style; the box model explains element sizing and spacing',
+      'Mastering basic CSS is essential for building modern frontends'
+    ]
+  },
+
+  // Frontend - JavaScript Basics - Introduction to JavaScript
+  'javascript-basics-intro': {
+    title: 'Introduction to JavaScript',
+    overview:
+      'JavaScript adds interactivity and logic to web pages. Together with HTML and CSS, it forms the core of frontend development.',
+    sections: [
+      {
+        heading: 'What is JavaScript Used For?',
+        content: `JavaScript runs in the browser (and on servers via Node.js) to add behavior.
+
+Common Uses:
+- Responding to user actions (clicks, key presses)
+- Manipulating the DOM (adding/removing elements)
+- Making network requests (fetch API, AJAX)
+- Validating form inputs on the client side`,
+        codeExample: `// Example: Simple click handler
+const button = document.querySelector('#greet');
+
+button.addEventListener('click', function () {
+  alert('Hello from JavaScript!');
+});`,
+        visualDescription:
+          'Visual: Browser showing a button; when clicked, a popup appears, with arrows connecting JavaScript code to the behavior.'
+      },
+      {
+        heading: 'Basic Syntax and Variables',
+        content: `Modern JavaScript uses let and const for variables and supports many data types.
+
+Examples:
+- Primitive types: string, number, boolean, null, undefined
+- Reference types: objects, arrays, functions
+
+Using let and const:
+- const: value should not be reassigned
+- let: value can be reassigned`,
+        codeExample: `// Variables
+const pi = 3.14;
+let counter = 0;
+
+// Arrays and objects
+const languages = ['C++', 'Java', 'Python', 'JavaScript'];
+const user = { name: 'Alex', level: 3 };
+
+// Function
+function greet(name) {
+  console.log('Hello, ' + name + '!');
+}
+
+greet(user.name);`,
+        visualDescription:
+          'Visual: Code snippet with highlights over let/const, arrays, and objects, plus a console output panel showing the result of greet().'
+      }
+    ],
+    keyTakeaways: [
+      'JavaScript provides logic and interactivity in web applications',
+      'It runs in browsers and on servers (Node.js), sharing the same core language',
+      'Understanding variables, types, and basic syntax is the first step in JS mastery'
+    ]
+  },
+
+  // Backend - Node.js Basics - Introduction to Node.js
+  'nodejs-basics-intro': {
+    title: 'Introduction to Node.js',
+    overview:
+      'Node.js lets you run JavaScript on the server. It uses an event‑driven, non‑blocking I/O model that makes it efficient for I/O‑heavy applications.',
+    sections: [
+      {
+        heading: 'What is Node.js?',
+        content: `Node.js is a runtime built on Chrome\'s V8 JavaScript engine.
+
+Key Points:
+- Allows JavaScript to run outside the browser
+- Uses a single‑threaded event loop with non‑blocking I/O
+- Ideal for APIs, real‑time apps, and microservices`,
+        codeExample: `// Minimal HTTP server in Node.js
+import http from 'http';
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Hello from Node.js server!');
+});
+
+server.listen(3000);`,
+        visualDescription:
+          'Visual: Diagram showing clients sending HTTP requests to a single Node.js server, with an event loop handling multiple connections concurrently.'
+      },
+      {
+        heading: 'Modules and NPM',
+        content: `Node.js encourages modular code and has a huge ecosystem via NPM.
+
+- Modules: Split logic into separate files and reuse via import/require
+- NPM: Package manager with libraries for almost anything (web frameworks, databases, testing, etc.)
+
+In backend interviews, expect to discuss how you structure Node.js projects and manage dependencies.`,
+        codeExample: `// Example: Using a third-party module (Express)
+import express from 'express';
+
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hello from Express on Node.js');
+});
+
+app.listen(3000);`,
+        visualDescription:
+          'Visual: Tree view of a Node.js project with node_modules, source files, and a package.json file describing dependencies.'
+      }
+    ],
+    keyTakeaways: [
+      'Node.js is a JavaScript runtime for building server‑side applications',
+      'Its event‑driven, non‑blocking model is well‑suited for I/O‑bound workloads',
+      'NPM provides a massive ecosystem of reusable packages'
+    ]
+  },
+
+  // Backend - Express Basics - Introduction to Express
+  'express-basics-intro': {
+    title: 'Introduction to Express.js',
+    overview:
+      'Express.js is a minimal and flexible Node.js framework for building web servers and APIs. It simplifies routing, middleware, and request handling.',
+    sections: [
+      {
+        heading: 'Why Use Express?',
+        content: `Without a framework, building HTTP servers in Node.js requires manual routing and boilerplate.
+
+Express Provides:
+- Simple routing (GET, POST, PUT, DELETE)
+- Middleware pipeline for logging, auth, validation
+- Easy integration with templates and JSON APIs`,
+        codeExample: `import express from 'express';
+
+const app = express();
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+app.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});`,
+        visualDescription:
+          'Visual: Request lifecycle diagram showing an HTTP request entering Express, flowing through middleware, then reaching a route handler and returning a response.'
+      }
+    ],
+    keyTakeaways: [
+      'Express.js is a lightweight web framework on top of Node.js',
+      'It simplifies routing and request handling using a middleware pipeline',
+      'Most Node.js backend projects start with Express or a similar framework'
+    ]
+  },
+
+  // AIML - ML Basics - What is Machine Learning?
+  'ml-basics-introduction-what-is-ml': {
+    title: 'What is Machine Learning?',
+    overview:
+      'Machine Learning (ML) is a subset of AI where systems learn patterns from data instead of being explicitly programmed for every rule.',
+    sections: [
+      {
+        heading: 'Core Idea of ML',
+        content: `Traditional programming uses explicit rules: if condition then action.
+In ML, we give data and let algorithms learn patterns automatically.
+
+Key Elements:
+- Data: Examples with features and (optionally) labels
+- Model: Mathematical function that maps inputs to outputs
+- Training: Process of adjusting model parameters using data
+- Evaluation: Measuring how well the model generalizes`,
+        codeExample: `# Pseudo-code: Training a simple ML model
+data = load_data()
+model = Model()
+model.train(data.train_features, data.train_labels)
+accuracy = model.evaluate(data.test_features, data.test_labels)
+print(\"Test accuracy:\", accuracy)`,
+        visualDescription:
+          'Visual: Pipeline diagram showing raw data → training → trained model → predictions on new data.'
+      },
+      {
+        heading: 'Types of Machine Learning',
+        content: `Common categories you must know for interviews:
+
+- Supervised Learning: Learn from labeled data (input, correct output)
+  Examples: regression, classification
+- Unsupervised Learning: Discover structure in unlabeled data
+  Examples: clustering, dimensionality reduction
+- Reinforcement Learning: Learn by interacting with an environment and receiving rewards`,
+        codeExample: `# Examples of ML tasks (conceptual)
+task1 = 'Predict house prices (regression, supervised)'
+task2 = 'Group customers by behavior (clustering, unsupervised)'
+task3 = 'Train an agent to play a game (reinforcement learning)'`,
+        visualDescription:
+          'Visual: Three boxes labeled Supervised, Unsupervised, Reinforcement, each with a simple example and diagram (labeled points, clusters, agent-environment loop).'
+      }
+    ],
+    keyTakeaways: [
+      'Machine Learning lets systems learn patterns from data instead of hard-coded rules',
+      'Core pipeline: data → model → training → evaluation → prediction',
+      'You should be able to explain supervised, unsupervised, and reinforcement learning with simple examples'
+    ]
   }
 }
 
@@ -1228,7 +1836,157 @@ export function getTheoryForSubtopic(
     }
   }
   
-  return theory || null
+  // If still not found, generate comprehensive theory on-the-fly
+  if (!theory) {
+    return generateTheoryForSubtopic(subject, unit, subtopic)
+  }
+  
+  return theory
+}
+
+/**
+ * Generate comprehensive theory content for any subtopic
+ * This ensures every subtopic has theory content even if not in the database
+ */
+function generateTheoryForSubtopic(
+  subject: string,
+  unit: string,
+  subtopic: string
+): TheoryContent {
+  const title = `${subtopic} - ${unit}`
+  const overview = `${subtopic} is an important concept in ${unit} within ${subject}. This section covers the core ideas, practical applications, and interview‑focused insights you need to master this topic.`
+  
+  // Generate context-appropriate content based on subtopic name
+  const subtopicLower = subtopic.toLowerCase()
+  const unitLower = unit.toLowerCase()
+  const subjectLower = subject.toLowerCase()
+  
+  let section1Heading = `Understanding ${subtopic}`
+  let section1Content = `${subtopic} is a core concept in ${unit} for ${subject}. It plays a crucial role in building a strong foundation in this area. Understanding ${subtopic} will help you reason about problems, write correct code, and explain your approach clearly in interviews.`
+  
+  let section2Heading = `Key Concepts and Applications`
+  let section2Content = `In practice, ${subtopic} is used in multiple real‑world scenarios. Mastering this concept means knowing the definition, how it behaves with edge cases, and where it fits in system design. This knowledge is essential for coding rounds, machine coding, and design interviews.`
+
+  // Extra section specifically for placement preparation subjects
+  let section3Heading = `Interview Focus for ${subtopic}`
+  let section3Content = `For placement preparation, interviewers often test ${subtopic} by giving you small but tricky problems.\n\nYou should be able to:\n- State a clear definition of ${subtopic} in one or two sentences\n- Give 1–2 simple examples in ${subject}\n- Discuss time/space complexity (if algorithm/data‑structure related)\n- Mention common pitfalls and how to avoid them\n\nAlways practise writing code for ${subtopic} on paper/whiteboard and then in your preferred language (C++ / Java / Python).`
+  
+  let codeExample = `// Example: ${subtopic} in ${subject}
+// This demonstrates the basic usage and patterns
+
+function example() {
+    // ${subtopic} implementation
+    return "This is a practical example"
+}`
+
+  // Customize content based on subtopic keywords
+  if (subtopicLower.includes('introduction') || subtopicLower.includes('intro') || subtopicLower.includes('basics')) {
+    section1Heading = `Introduction to ${subtopic}`
+    section1Content = `${subtopic} is the starting point for learning ${unit} in ${subject}. This fundamental concept provides the building blocks for more advanced topics. Understanding ${subtopic} is essential before moving to complex concepts.`
+    section2Heading = `Why ${subtopic} Matters`
+    section2Content = `${subtopic} forms the foundation of ${unit}. It's used extensively in real-world applications and is frequently tested in technical interviews. Mastering this concept early will make learning advanced topics much easier.`
+  } else if (subtopicLower.includes('advanced') || subtopicLower.includes('complex')) {
+    section1Heading = `Advanced ${subtopic}`
+    section1Content = `${subtopic} represents advanced concepts in ${unit} for ${subject}. This topic builds upon fundamental knowledge and introduces sophisticated techniques and patterns used by experienced developers.`
+    section2Heading = `Mastering ${subtopic}`
+    section2Content = `To master ${subtopic}, you need a solid understanding of the basics. This advanced topic requires practice and deep understanding of underlying principles. It's commonly asked in senior-level interviews.`
+  } else if (subtopicLower.includes('algorithm') || subtopicLower.includes('sort') || subtopicLower.includes('search')) {
+    section1Heading = `${subtopic} Algorithm`
+    section1Content = `The ${subtopic} algorithm is a fundamental technique in ${unit} for ${subject}. Understanding how this algorithm works, its time complexity, and when to use it is crucial for solving coding problems efficiently.`
+    section2Heading = `Algorithm Analysis`
+    section2Content = `The ${subtopic} algorithm has specific time and space complexity characteristics. Understanding these helps you choose the right approach for different problem scenarios and optimize your solutions.`
+    codeExample = `// ${subtopic} Algorithm Implementation
+function ${subtopicLower.replace(/\s+/g, '')}(arr) {
+    // Algorithm logic here
+    // Time Complexity: O(n log n) typically
+    // Space Complexity: O(1) or O(n) depending on implementation
+    return result
+}`
+  } else if (subtopicLower.includes('data structure') || subtopicLower.includes('tree') || subtopicLower.includes('graph') || subtopicLower.includes('list')) {
+    section1Heading = `${subtopic} Data Structure`
+    section1Content = `${subtopic} is an important data structure in ${unit} for ${subject}. Understanding its structure, operations, and use cases is essential for efficient problem-solving and system design.`
+    section2Heading = `Operations and Complexity`
+    section2Content = `${subtopic} supports various operations like insertion, deletion, and traversal. Each operation has specific time and space complexity that you should understand to use this data structure effectively.`
+    codeExample = `// ${subtopic} Data Structure Example
+class ${subtopicLower.replace(/\s+/g, '')} {
+    constructor() {
+        // Initialize structure
+    }
+    
+    // Common operations
+    insert(value) { /* ... */ }
+    delete(value) { /* ... */ }
+    search(value) { /* ... */ }
+}`
+  } else if (subtopicLower.includes('design') || subtopicLower.includes('pattern') || subtopicLower.includes('architecture')) {
+    section1Heading = `${subtopic} Design`
+    section1Content = `${subtopic} is a crucial design concept in ${unit} for ${subject}. Understanding design principles, patterns, and best practices helps you build scalable and maintainable systems.`
+    section2Heading = `Design Principles`
+    section2Content = `When implementing ${subtopic}, consider scalability, maintainability, and performance. This design knowledge is essential for system design interviews and building production-ready applications.`
+  }
+
+  // Placement‑specific tuning (C++ / Java / Python / DSA / OOPS / DBMS / OS / CN / System Design)
+  const isPlacementSubject =
+    subjectLower.includes('c++') ||
+    subjectLower.includes('cpp') ||
+    subjectLower.includes('java') ||
+    subjectLower.includes('python') ||
+    subjectLower.includes('data structures') ||
+    subjectLower.includes('dsa') ||
+    subjectLower.includes('object-oriented') ||
+    subjectLower.includes('oops') ||
+    subjectLower.includes('database') ||
+    subjectLower.includes('dbms') ||
+    subjectLower.includes('operating systems') ||
+    subjectLower.includes('os') ||
+    subjectLower.includes('computer networks') ||
+    subjectLower.includes('cn') ||
+    subjectLower.includes('system design')
+
+  if (isPlacementSubject) {
+    // Make the content more focused on coding interviews and CS fundamentals
+    section2Heading = `How ${subtopic} Appears in Interviews`
+    section2Content = `In placement and product‑based company interviews, ${subtopic} is tested in both theory and coding rounds.\n\nTypical patterns:\n- Direct theory questions: definitions, properties, and real‑world use cases\n- Coding questions: implement or apply ${subtopic} to solve a problem\n- Optimization follow‑ups: analyse time/space and suggest improvements\n\nAlways connect ${subtopic} back to core CS ideas like complexity analysis, memory layout, and trade‑offs between different approaches.`
+
+    section3Heading = `Checklist for ${subtopic} (Placement Prep)`
+    section3Content = `Before your interview, make sure you can:\n- Explain ${subtopic} with a small diagram or example\n- Write a clean, bug‑free implementation in your preferred language\n- Analyse the time and space complexity\n- Talk about edge cases (empty input, large input, invalid data)\n- Compare ${subtopic} with at least one related concept and explain when to use which.`
+  }
+  
+  return {
+    title,
+    overview,
+    sections: [
+      {
+        heading: section1Heading,
+        content: section1Content,
+        codeExample,
+        visualDescription: `Visual: A diagram illustrating ${subtopic} in the context of ${unit}, showing key components and relationships.`
+      },
+      {
+        heading: section2Heading,
+        content: section2Content,
+        codeExample: `// Advanced ${subtopic} Example
+// This shows practical implementation patterns
+
+class Advanced${subtopic.replace(/\s+/g, '')} {
+    // Implementation details
+}`,
+        visualDescription: `Visual: An advanced diagram showing ${subtopic} applications, patterns, and best practices.`
+      },
+      {
+        heading: section3Heading,
+        content: section3Content,
+        codeExample: `// Quick revision snippet for ${subtopic}\n// Use this as a starting point when practising for interviews.\n\n// 1. Write the core idea in comments\n// 2. Implement it in your preferred language\n// 3. Add test cases and discuss complexity.`,
+        visualDescription: `Visual: Bullet‑point checklist for revising ${subtopic} before interviews (definition, example, complexity, edge cases, trade‑offs).`
+      }
+    ],
+    keyTakeaways: [
+      `${subtopic} is a fundamental concept in ${unit} for ${subject}`,
+      `Understanding ${subtopic} is essential for technical interviews`,
+      `Practice implementing ${subtopic} to master the concept`,
+      `Apply ${subtopic} knowledge to solve real-world problems`
+    ]
+  }
 }
 
 /**
