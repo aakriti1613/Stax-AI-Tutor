@@ -9,9 +9,8 @@ import {
   DOMAIN_PRICING,
   calculateCustomPlanPrice,
   type PlanType,
-  type Domain,
 } from '@/lib/pricing'
-import { DOMAINS } from '@/lib/subjects'
+import { DOMAINS, type Domain } from '@/lib/subjects'
 import { Check, X, Sparkles, Crown, Star, Zap } from 'lucide-react'
 
 export default function PricingPage() {

@@ -33,7 +33,7 @@ export default function ArticleDetailPage() {
 
   const handleLike = async () => {
     // TODO: Implement like functionality
-    toast.info('Like functionality coming soon!')
+    toast('Like functionality coming soon!')
   }
 
   if (loading) {

@@ -3,6 +3,8 @@ import { getInterviewExperiences, getInterviewArticles } from '@/lib/database/in
 import { Domain } from '@/lib/subjects'
 import { InterviewType } from '@/lib/types/interviews'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

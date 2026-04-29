@@ -294,7 +294,11 @@ export default function ContestDetailPage() {
       })
 
       if (allPassed) {
-        setSolvedProblems(new Set([...solvedProblems, selectedProblem]))
+        setSolvedProblems(prev => {
+          const updated = new Set(prev)
+          updated.add(selectedProblem)
+          return updated
+        })
         confetti({
           particleCount: 200,
           spread: 100,
@@ -469,7 +473,7 @@ export default function ContestDetailPage() {
                 </div>
                 <div className="prose prose-invert max-w-none mb-6">
                   <div className="text-gray-300 mb-6 whitespace-pre-wrap leading-relaxed">
-                    {problemDetails?.description || problem.description || 'Solve this problem!'}
+                    {problemDetails?.description || 'Solve this problem!'}
                   </div>
                   
                   {problemDetails?.examples && problemDetails.examples.length > 0 && (

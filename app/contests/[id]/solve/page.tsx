@@ -210,7 +210,11 @@ rl.on('line', (line) => {
           origin: { y: 0.6 }
         })
         toast.success('All tests passed! 🎉')
-        setSolvedProblems(new Set([...solvedProblems, currentProblem.id]))
+        setSolvedProblems(prev => {
+          const updated = new Set(prev)
+          updated.add(currentProblemIndex)
+          return updated
+        })
       } else {
         const passedCount = results.filter(r => r.passed).length
         toast.error(`${passedCount}/${results.length} tests passed`)
@@ -256,7 +260,11 @@ rl.on('line', (line) => {
         console.log('Could not submit to contest, marking as solved locally')
       }
       
-      setSolvedProblems(new Set([...solvedProblems, currentProblemIndex]))
+      setSolvedProblems(prev => {
+        const updated = new Set(prev)
+        updated.add(currentProblemIndex)
+        return updated
+      })
     } catch (error: any) {
       console.error('Error submitting:', error)
       toast.error('Failed to submit solution')
@@ -306,7 +314,7 @@ rl.on('line', (line) => {
           <div className="flex gap-4">
             <button
               onClick={handleComplete}
-              disabled={problems.some(p => !solvedProblems.has(p.id))}
+              disabled={problems.some((_, idx) => !solvedProblems.has(idx))}
               className="btn-primary px-6 py-3 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trophy className="w-5 h-5" />

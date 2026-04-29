@@ -1,10 +1,11 @@
 ﻿'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { CheckCircle2, ArrowLeft } from 'lucide-react'
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const txnid = searchParams?.get('txnid')
@@ -33,5 +34,13 @@ export default function PaymentSuccessPage() {
         </button>
       </motion.div>
     </div>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center p-8 text-gray-400">Loading...</div>}>
+      <PaymentSuccessContent />
+    </Suspense>
   )
 }

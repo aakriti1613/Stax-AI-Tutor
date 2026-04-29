@@ -104,7 +104,7 @@ export default function DuelsPage() {
   }
 
   const handleCreateDuel = () => {
-    toast.info('Challenge friend feature coming soon!')
+    toast('Challenge friend feature coming soon!')
   }
 
   return (
