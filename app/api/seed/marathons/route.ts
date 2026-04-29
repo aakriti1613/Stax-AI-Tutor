@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
     const marathon1Id = await createMarathon({
       title: '24-Hour Coding Marathon',
       description: 'Code for 24 hours straight and earn massive XP! Push your limits and show your dedication.',
+      domain: 'placement',
       startDate: new Date(),
       endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       duration: 24,
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
     const marathon2Id = await createMarathon({
       title: 'Weekend Warrior',
       description: '48-hour weekend coding challenge. Perfect for those who love coding on weekends!',
+      domain: 'placement',
       startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Starts in 2 days
       endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // Ends in 4 days
       duration: 48,
@@ -37,6 +39,7 @@ export async function POST(request: NextRequest) {
     const marathon3Id = await createMarathon({
       title: 'Weekly Coding Challenge',
       description: 'A week-long coding marathon. Solve problems throughout the week and climb the leaderboard!',
+      domain: 'placement',
       startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Starts in 7 days
       endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Ends in 14 days
       duration: 168, // 7 days = 168 hours
@@ -60,5 +63,7 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+
 
 

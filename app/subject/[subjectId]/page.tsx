@@ -53,7 +53,7 @@ export default function SubjectPage() {
             className="mb-12 sticky top-8 z-20 glass-card p-6 backdrop-blur-xl"
           >
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/')}
               className="btn-secondary mb-4 flex items-center gap-2"
             >
               <ArrowLeft className="w-5 h-5" />

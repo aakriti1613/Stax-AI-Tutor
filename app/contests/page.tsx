@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, Users, Clock, Zap, MapPin, Award } from 'lucide-react'
 import { Contest, ContestLevel } from '@/lib/types/contests'
+import { Domain, DOMAINS } from '@/lib/subjects'
 import Link from 'next/link'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -11,7 +12,8 @@ import toast from 'react-hot-toast'
 export default function ContestsPage() {
   const [contests, setContests] = useState<Contest[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<ContestLevel | 'all'>('all')
+  const [levelFilter, setLevelFilter] = useState<ContestLevel | 'all'>('all')
+  const [domainFilter, setDomainFilter] = useState<Domain | 'all'>('all')
 
   useEffect(() => {
     loadContests()
@@ -33,8 +35,68 @@ export default function ContestsPage() {
 
   const loadContests = async () => {
     try {
-      const response = await axios.get('/api/contests')
-      setContests(response.data.contests || [])
+      const url = domainFilter !== 'all' 
+        ? `/api/contests?domain=${domainFilter}`
+        : '/api/contests'
+      const response = await axios.get(url)
+      const serverContests: Contest[] = response.data.contests || []
+
+      if (serverContests.length === 0) {
+        // Fallback sample contests by domain/level when Supabase is unavailable
+        const now = new Date()
+        const sevenDays = 7 * 24 * 60 * 60 * 1000
+        const fallback: Contest[] = [
+          {
+            id: 'sample-contest-placement',
+            title: 'Placement DSA Showdown',
+            description: 'Solve core DSA problems for product-based interviews.',
+            level: 'city',
+            status: 'active',
+            startDate: now,
+            endDate: new Date(now.getTime() + sevenDays),
+            xpMultiplier: 1.5,
+            participants: 120,
+            maxParticipants: 500,
+            domain: 'placement',
+            problems: [],
+            leaderboard: [],
+          },
+          {
+            id: 'sample-contest-frontend',
+            title: 'Frontend UI Battle',
+            description: 'React/JS challenges focused on UI and performance.',
+            level: 'state',
+            status: 'upcoming',
+            startDate: new Date(now.getTime() + sevenDays),
+            endDate: new Date(now.getTime() + 2 * sevenDays),
+            xpMultiplier: 2,
+            participants: 80,
+            maxParticipants: 400,
+            domain: 'frontend',
+            problems: [],
+            leaderboard: [],
+          },
+          {
+            id: 'sample-contest-backend',
+            title: 'Backend API Challenge',
+            description: 'Design and optimise APIs and database queries.',
+            level: 'national',
+            status: 'upcoming',
+            startDate: new Date(now.getTime() + 2 * sevenDays),
+            endDate: new Date(now.getTime() + 3 * sevenDays),
+            xpMultiplier: 3,
+            participants: 60,
+            maxParticipants: 300,
+            domain: 'backend',
+            problems: [],
+            leaderboard: [],
+          },
+        ]
+
+        setContests(fallback)
+      } else {
+        setContests(serverContests)
+      }
     } catch (error: any) {
       console.error('Error loading contests:', error)
       toast.error('Failed to load contests')
@@ -42,6 +104,10 @@ export default function ContestsPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadContests()
+  }, [domainFilter])
 
   const getLevelColor = (level: ContestLevel) => {
     switch (level) {
@@ -65,9 +131,11 @@ export default function ContestsPage() {
     }
   }
 
-  const filteredContests = filter === 'all' 
-    ? contests 
-    : contests.filter(c => c.level === filter)
+  const filteredContests = contests.filter(c => {
+    const levelMatch = levelFilter === 'all' || c.level === levelFilter
+    const domainMatch = domainFilter === 'all' || c.domain === domainFilter
+    return levelMatch && domainMatch
+  })
 
   if (loading) {
     return (
@@ -93,48 +161,85 @@ export default function ContestsPage() {
           <p className="text-xl text-gray-400">Compete and climb the leaderboards!</p>
         </motion.div>
 
-        {/* Filters */}
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-6 py-2 rounded-lg font-bold transition-all ${
-              filter === 'all'
-                ? 'bg-neon-cyan text-white'
-                : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('city')}
-            className={`px-6 py-2 rounded-lg font-bold transition-all ${
-              filter === 'city'
-                ? 'bg-neon-green text-white'
-                : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
-            }`}
-          >
-            City
-          </button>
-          <button
-            onClick={() => setFilter('state')}
-            className={`px-6 py-2 rounded-lg font-bold transition-all ${
-              filter === 'state'
-                ? 'bg-neon-cyan text-white'
-                : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
-            }`}
-          >
-            State
-          </button>
-          <button
-            onClick={() => setFilter('national')}
-            className={`px-6 py-2 rounded-lg font-bold transition-all ${
-              filter === 'national'
-                ? 'bg-neon-purple text-white'
-                : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
-            }`}
-          >
-            National
-          </button>
+        {/* Domain Filters */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold mb-3 text-neon-cyan">Filter by Domain</h3>
+          <div className="flex flex-wrap gap-3 mb-4">
+            <button
+              onClick={() => setDomainFilter('all')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                domainFilter === 'all'
+                  ? 'bg-neon-cyan text-black'
+                  : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+              }`}
+            >
+              All Domains
+            </button>
+            {(Object.keys(DOMAINS) as Domain[]).map(domainId => {
+              const domain = DOMAINS[domainId]
+              return (
+                <button
+                  key={domainId}
+                  onClick={() => setDomainFilter(domainId)}
+                  className={`px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2 ${
+                    domainFilter === domainId
+                      ? 'bg-neon-cyan text-black'
+                      : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+                  }`}
+                >
+                  <span>{domain.icon}</span>
+                  <span>{domain.name}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Level Filters */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold mb-3 text-neon-cyan">Filter by Level</h3>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setLevelFilter('all')}
+              className={`px-6 py-2 rounded-lg font-bold transition-all ${
+                levelFilter === 'all'
+                  ? 'bg-neon-cyan text-white'
+                  : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+              }`}
+            >
+              All Levels
+            </button>
+            <button
+              onClick={() => setLevelFilter('city')}
+              className={`px-6 py-2 rounded-lg font-bold transition-all ${
+                levelFilter === 'city'
+                  ? 'bg-neon-green text-white'
+                  : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+              }`}
+            >
+              City
+            </button>
+            <button
+              onClick={() => setLevelFilter('state')}
+              className={`px-6 py-2 rounded-lg font-bold transition-all ${
+                levelFilter === 'state'
+                  ? 'bg-neon-cyan text-white'
+                  : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+              }`}
+            >
+              State
+            </button>
+            <button
+              onClick={() => setLevelFilter('national')}
+              className={`px-6 py-2 rounded-lg font-bold transition-all ${
+                levelFilter === 'national'
+                  ? 'bg-neon-purple text-white'
+                  : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+              }`}
+            >
+              National
+            </button>
+          </div>
         </div>
 
         {/* Contests Grid */}
@@ -148,8 +253,13 @@ export default function ContestsPage() {
               className="glass-card p-6 hover:scale-105 transition-transform cursor-pointer"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`px-3 py-1 rounded-full text-xs font-bold border ${getLevelBg(contest.level)} ${getLevelColor(contest.level)}`}>
-                  {contest.level.toUpperCase()}
+                <div className="flex flex-col gap-2">
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold border ${getLevelBg(contest.level)} ${getLevelColor(contest.level)}`}>
+                    {contest.level.toUpperCase()}
+                  </div>
+                  <div className="px-3 py-1 rounded-full text-xs font-bold bg-neon-purple/20 text-neon-purple border border-neon-purple">
+                    {DOMAINS[contest.domain]?.icon} {DOMAINS[contest.domain]?.name}
+                  </div>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-xs font-bold ${
                   contest.status === 'active' ? 'bg-neon-green/20 text-neon-green' :

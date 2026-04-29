@@ -1,33 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateMCQs } from '@/lib/gemini'
+import { getMCQsForSubtopic } from '@/lib/mcqDatabase'
 
 export async function POST(request: NextRequest) {
-  let concept = 'this concept'
-  let unit = 'this unit'
-  
   try {
     const body = await request.json()
     const subject = body.subject
-    unit = body.unit || unit
-    concept = body.concept || concept
+    const unit = body.unit
+    const subtopic = body.subtopic || body.concept || unit
 
-    if (!subject || !body.unit || !body.concept) {
+    if (!subject || !unit) {
       return NextResponse.json(
-        { error: 'Subject, unit, and concept are required' },
+        { error: 'Subject and unit are required' },
         { status: 400 }
       )
     }
 
-    const mcqs = await generateMCQs(subject, unit, concept)
+    // Use static database (which generates MCQs on-the-fly if not found)
+    const mcqs = getMCQsForSubtopic(subject, unit, subtopic)
 
-    return NextResponse.json({ mcqs })
+    // Convert to component format
+    const formattedMCQs = mcqs.map(mcq => ({
+      question: mcq.question,
+      options: mcq.options,
+      correctAnswer: mcq.correctAnswer,
+      explanation: mcq.explanation,
+      wrongExplanations: {},
+      difficulty: mcq.difficulty.toLowerCase() as 'basic' | 'medium' | 'advanced'
+    }))
+
+    return NextResponse.json({ mcqs: formattedMCQs })
   } catch (error: any) {
-    console.error('Error generating MCQs:', error)
+    console.error('Error getting MCQs:', error)
     
-    // Return error - component will handle fallback
     return NextResponse.json(
       { 
-        error: error.message || 'Failed to generate MCQs. Please check your Gemini API key and try again.',
+        error: error.message || 'Failed to get MCQs.',
         mcqs: []
       },
       { status: 500 }

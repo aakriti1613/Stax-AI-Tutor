@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMarathons, createMarathon } from '@/lib/database/marathons'
+import { Domain } from '@/lib/subjects'
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,10 +17,11 @@ export async function GET(request: NextRequest) {
 
     const marathons = []
 
-    // Marathon 1: 24-Hour Challenge
+    // Marathon 1: Placement
     const marathon1Id = await createMarathon({
       title: '24-Hour Coding Marathon',
       description: 'Code for 24 hours straight and earn massive XP! Push your limits and show your dedication.',
+      domain: 'placement' as Domain,
       startDate: new Date(),
       endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       duration: 24,
@@ -30,10 +32,11 @@ export async function GET(request: NextRequest) {
       marathons.push({ id: marathon1Id, title: '24-Hour Coding Marathon' })
     }
 
-    // Marathon 2: Weekend Warrior
+    // Marathon 2: Frontend
     const marathon2Id = await createMarathon({
       title: 'Weekend Warrior',
-      description: '48-hour weekend coding challenge. Perfect for those who love coding on weekends!',
+      description: '48-hour frontend marathon. Build UIs and fix performance issues!',
+      domain: 'frontend' as Domain,
       startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Starts in 2 days
       endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // Ends in 4 days
       duration: 48,
@@ -44,10 +47,11 @@ export async function GET(request: NextRequest) {
       marathons.push({ id: marathon2Id, title: 'Weekend Warrior' })
     }
 
-    // Marathon 3: Weekly Challenge
+    // Marathon 3: Backend
     const marathon3Id = await createMarathon({
       title: 'Weekly Coding Challenge',
-      description: 'A week-long coding marathon. Solve problems throughout the week and climb the leaderboard!',
+      description: 'A week-long backend marathon. Design APIs and databases at scale!',
+      domain: 'backend' as Domain,
       startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Starts in 7 days
       endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Ends in 14 days
       duration: 168, // 7 days = 168 hours
@@ -71,5 +75,7 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+
 
 

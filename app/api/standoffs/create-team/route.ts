@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createStandoffTeam } from '@/lib/database/standoffs'
+import { Domain } from '@/lib/subjects'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId } = body
+    const { userId, domain } = body
 
     if (!userId) {
       return NextResponse.json(
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const standoffId = await createStandoffTeam(userId)
+    const standoffId = await createStandoffTeam(userId, (domain || 'placement') as Domain)
 
     if (!standoffId) {
       return NextResponse.json(
@@ -31,5 +32,7 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+
 
 

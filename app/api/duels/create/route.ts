@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createDuel, startDuel } from '@/lib/database/duels'
 import { generateCodingProblem } from '@/lib/gemini'
 import { ContestProblem } from '@/lib/types/contests'
+import { Domain } from '@/lib/subjects'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { challengerId, opponentId, difficulty, subject, unit } = body
+    const { challengerId, opponentId, difficulty, subject, unit, domain } = body
 
     if (!challengerId || !opponentId) {
       return NextResponse.json(
@@ -31,7 +32,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the duel
-    const duelId = await createDuel(challengerId, opponentId, problem, 50)
+    const duelId = await createDuel(
+      challengerId, 
+      opponentId, 
+      problem, 
+      (domain || 'placement') as Domain,
+      50
+    )
 
     if (!duelId) {
       return NextResponse.json(
@@ -62,5 +69,7 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+
 
 

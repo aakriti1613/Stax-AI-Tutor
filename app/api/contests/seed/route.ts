@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getContests, createContest, addContestProblem } from '@/lib/database/contests'
 import { CONTEST_PROBLEMS } from '@/lib/contestProblems'
+import { Domain } from '@/lib/subjects'
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,11 +18,12 @@ export async function GET(request: NextRequest) {
 
     const contests = []
 
-    // Contest 1: City Level
+    // Contest 1: Placement (City)
     const contest1Id = await createContest({
       title: 'City Coding Championship',
       description: 'Compete with coders in your city! Show your skills and climb the leaderboard.',
       level: 'city',
+      domain: 'placement' as Domain,
       startDate: new Date(),
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       xpMultiplier: 1.5,
@@ -46,11 +48,12 @@ export async function GET(request: NextRequest) {
       contests.push({ id: contest1Id, title: 'City Coding Championship' })
     }
 
-    // Contest 2: State Level
+    // Contest 2: Frontend (State)
     const contest2Id = await createContest({
       title: 'State Level Challenge',
-      description: 'State-wide coding competition. Prove you are the best coder in your state!',
+      description: 'Frontend-focused state-wide coding competition. Show your React/JS skills!',
       level: 'state',
+      domain: 'frontend' as Domain,
       startDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Starts in 3 days
       endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // Ends in 10 days
       xpMultiplier: 2.0,
@@ -75,11 +78,12 @@ export async function GET(request: NextRequest) {
       contests.push({ id: contest2Id, title: 'State Level Challenge' })
     }
 
-    // Contest 3: National Level
+    // Contest 3: Backend (National)
     const contest3Id = await createContest({
       title: 'National Coding Olympiad',
-      description: 'The ultimate coding challenge! Compete with the best coders nationwide.',
+      description: 'The ultimate backend challenge! Compete with the best coders nationwide.',
       level: 'national',
+      domain: 'backend' as Domain,
       startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Starts in 30 days
       endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000), // Ends in 37 days
       xpMultiplier: 3.0,

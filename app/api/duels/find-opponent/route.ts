@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { findOpponent, createDuel, startDuel } from '@/lib/database/duels'
 import { generateCodingProblem } from '@/lib/gemini'
 import { ContestProblem } from '@/lib/types/contests'
+import { Domain } from '@/lib/subjects'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, difficulty, subject, unit } = body
+    const { userId, difficulty, subject, unit, domain } = body
 
     if (!userId) {
       return NextResponse.json(
@@ -67,7 +68,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the duel
-    const duelId = await createDuel(dbUserId, finalOpponentId, problem, 50)
+    if (typeof finalOpponentId !== 'string' || typeof dbUserId !== 'string') {
+      return NextResponse.json(
+        { error: 'No opponent or user available' },
+        { status: 404 }
+      )
+    }
+    
+    const duelId = await createDuel(
+      dbUserId,
+      finalOpponentId,
+      problem, 
+      (domain || 'placement') as Domain,
+      50
+    )
 
     if (!duelId) {
       return NextResponse.json(

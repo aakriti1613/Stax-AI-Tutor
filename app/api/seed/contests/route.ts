@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
       title: 'City Coding Championship',
       description: 'Compete with coders in your city! Show your skills and climb the leaderboard.',
       level: 'city',
+      domain: 'placement',
       startDate: new Date(),
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       xpMultiplier: 1.5,
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
       title: 'State Level Challenge',
       description: 'State-wide coding competition. Prove you are the best coder in your state!',
       level: 'state',
+      domain: 'placement',
       startDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // Starts in 3 days
       endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // Ends in 10 days
       xpMultiplier: 2.0,
@@ -84,6 +86,7 @@ export async function POST(request: NextRequest) {
       title: 'National Coding Olympiad',
       description: 'The ultimate coding challenge! Compete with the best coders nationwide.',
       level: 'national',
+      domain: 'placement',
       startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Starts in 30 days
       endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000), // Ends in 37 days
       xpMultiplier: 3.0,
@@ -119,5 +122,7 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+
 
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Flame, Clock, Users, Zap, Trophy } from 'lucide-react'
 import { Marathon } from '@/lib/types/contests'
+import { Domain, DOMAINS } from '@/lib/subjects'
 import Link from 'next/link'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -11,6 +12,7 @@ import toast from 'react-hot-toast'
 export default function MarathonsPage() {
   const [marathons, setMarathons] = useState<Marathon[]>([])
   const [loading, setLoading] = useState(true)
+  const [domainFilter, setDomainFilter] = useState<Domain | 'all'>('all')
 
   useEffect(() => {
     loadMarathons()
@@ -32,8 +34,64 @@ export default function MarathonsPage() {
 
   const loadMarathons = async () => {
     try {
-      const response = await axios.get('/api/marathons')
-      setMarathons(response.data.marathons || [])
+      const url = domainFilter !== 'all' 
+        ? `/api/marathons?domain=${domainFilter}`
+        : '/api/marathons'
+      const response = await axios.get(url)
+      const serverMarathons: Marathon[] = response.data.marathons || []
+
+      if (serverMarathons.length === 0) {
+        const now = new Date()
+        const day = 24 * 60 * 60 * 1000
+        const fallback: Marathon[] = [
+          {
+            id: 'sample-marathon-placement',
+            title: 'Placement Prep Marathon',
+            description: 'A 24-hour DSA + CS fundamentals marathon.',
+            status: 'active',
+            startDate: now,
+            endDate: new Date(now.getTime() + day),
+            xpMultiplier: 3,
+            duration: 24,
+            domain: 'placement',
+            problems: [],
+            participants: 150,
+            leaderboard: [],
+          },
+          {
+            id: 'sample-marathon-frontend',
+            title: 'Frontend Weekend Sprint',
+            description: '48-hour React/JS marathon with UI challenges.',
+            status: 'upcoming',
+            startDate: new Date(now.getTime() + 2 * day),
+            endDate: new Date(now.getTime() + 4 * day),
+            xpMultiplier: 2.5,
+            duration: 48,
+            domain: 'frontend',
+            problems: [],
+            participants: 90,
+            leaderboard: [],
+          },
+          {
+            id: 'sample-marathon-backend',
+            title: 'Backend Weekly Challenge',
+            description: '7-day API + database marathon for backend devs.',
+            status: 'upcoming',
+            startDate: new Date(now.getTime() + 7 * day),
+            endDate: new Date(now.getTime() + 14 * day),
+            xpMultiplier: 2,
+            duration: 168,
+            domain: 'backend',
+            problems: [],
+            participants: 70,
+            leaderboard: [],
+          },
+        ]
+
+        setMarathons(fallback)
+      } else {
+        setMarathons(serverMarathons)
+      }
     } catch (error: any) {
       console.error('Error loading marathons:', error)
       toast.error('Failed to load marathons')
@@ -41,6 +99,10 @@ export default function MarathonsPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadMarathons()
+  }, [domainFilter])
 
   if (loading) {
     return (
@@ -69,6 +131,40 @@ export default function MarathonsPage() {
           <p className="text-xl text-gray-400">Extended coding sessions with massive XP multipliers!</p>
         </motion.div>
 
+        {/* Domain Filters */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold mb-3 text-neon-cyan">Filter by Domain</h3>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setDomainFilter('all')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                domainFilter === 'all'
+                  ? 'bg-neon-cyan text-black'
+                  : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+              }`}
+            >
+              All Domains
+            </button>
+            {(Object.keys(DOMAINS) as Domain[]).map(domainId => {
+              const domain = DOMAINS[domainId]
+              return (
+                <button
+                  key={domainId}
+                  onClick={() => setDomainFilter(domainId)}
+                  className={`px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2 ${
+                    domainFilter === domainId
+                      ? 'bg-neon-cyan text-black'
+                      : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+                  }`}
+                >
+                  <span>{domain.icon}</span>
+                  <span>{domain.name}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Marathons Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {marathons.map((marathon, idx) => (
@@ -80,12 +176,17 @@ export default function MarathonsPage() {
               className="glass-card p-6 hover:scale-105 transition-transform"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  marathon.status === 'active' ? 'bg-neon-green/20 text-neon-green' :
-                  marathon.status === 'upcoming' ? 'bg-neon-cyan/20 text-neon-cyan' :
-                  'bg-gray-600/20 text-gray-400'
-                }`}>
-                  {marathon.status.toUpperCase()}
+                <div className="flex flex-col gap-2">
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    marathon.status === 'active' ? 'bg-neon-green/20 text-neon-green' :
+                    marathon.status === 'upcoming' ? 'bg-neon-cyan/20 text-neon-cyan' :
+                    'bg-gray-600/20 text-gray-400'
+                  }`}>
+                    {marathon.status.toUpperCase()}
+                  </div>
+                  <div className="px-3 py-1 rounded-full text-xs font-bold bg-neon-purple/20 text-neon-purple border border-neon-purple">
+                    {DOMAINS[marathon.domain]?.icon} {DOMAINS[marathon.domain]?.name}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 text-neon-orange">
                   <Flame className="w-5 h-5" />

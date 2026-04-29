@@ -181,6 +181,9 @@ export default function SubtopicPhasePage() {
                 unit={unit.name}
                 subtopic={subtopic.name}
                 onComplete={handleTheoryComplete}
+                subjectId={subjectId}
+                unitId={unitId}
+                subtopicId={subtopicId}
               />
             </motion.div>
           )}
@@ -217,6 +220,14 @@ export default function SubtopicPhasePage() {
                   subtopic={subtopic.name}
                   difficulty={phase === 'basic' ? 'Basic' : phase === 'medium' ? 'Medium' : 'Advanced'}
                   onComplete={phase === 'basic' ? handleBasicComplete : handleCodingComplete}
+                />
+              ) : subjectId === 'os' || subjectId === 'cn' ? (
+                // For OS and CN, use conceptual Q&A (MCQs) instead of coding practice
+                <MCQGate
+                  subject={subject.name}
+                  unit={`${unit.name} - ${subtopic.name}`}
+                  onPass={phase === 'basic' ? handleBasicComplete : handleCodingComplete}
+                  isFirstUnit={false}
                 />
               ) : (
                 <CodingChallenge

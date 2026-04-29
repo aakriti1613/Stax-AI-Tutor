@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Sword, Users, Clock, Trophy, Zap, Search, User, Target, Sparkles } from 'lucide-react'
 import { Duel } from '@/lib/types/contests'
+import { Domain, DOMAINS } from '@/lib/subjects'
 import toast from 'react-hot-toast'
 import axios from 'axios'
 
@@ -16,6 +17,7 @@ export default function DuelsPage() {
   const [matchingProgress, setMatchingProgress] = useState(0)
   const [foundOpponent, setFoundOpponent] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [selectedDomain, setSelectedDomain] = useState<Domain>('placement')
 
   // Get userId from localStorage
   const [userId, setUserId] = useState<string | null>(null)
@@ -76,7 +78,8 @@ export default function DuelsPage() {
         userId,
         difficulty: 'Medium',
         subject: 'Computer Science',
-        unit: 'Algorithms'
+        unit: 'Algorithms',
+        domain: selectedDomain
       })
 
       clearInterval(progressInterval)
@@ -214,9 +217,33 @@ export default function DuelsPage() {
                     </motion.div>
 
                     <h2 className="text-4xl font-bold mb-4 neon-text">Ready for a Challenge?</h2>
-                    <p className="text-gray-400 mb-12 max-w-2xl mx-auto text-lg">
+                    <p className="text-gray-400 mb-6 max-w-2xl mx-auto text-lg">
                       Test your skills against other coders! Solve the same problem faster than your opponent to win XP and climb the leaderboard.
                     </p>
+
+                    {/* Domain Selection */}
+                    <div className="mb-8">
+                      <label className="block text-sm font-semibold mb-3 text-neon-cyan">Select Domain</label>
+                      <div className="flex flex-wrap gap-3 justify-center">
+                        {(Object.keys(DOMAINS) as Domain[]).map(domainId => {
+                          const domain = DOMAINS[domainId]
+                          return (
+                            <button
+                              key={domainId}
+                              onClick={() => setSelectedDomain(domainId)}
+                              className={`px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2 ${
+                                selectedDomain === domainId
+                                  ? 'bg-neon-cyan text-black'
+                                  : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+                              }`}
+                            >
+                              <span>{domain.icon}</span>
+                              <span>{domain.name}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
 
                     <div className="flex gap-6 justify-center">
                       <motion.button

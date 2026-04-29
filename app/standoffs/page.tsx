@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Users, Trophy, Clock, Zap, UserPlus, Search, Sparkles } from 'lucide-react'
 import { Standoff } from '@/lib/types/contests'
+import { Domain, DOMAINS } from '@/lib/subjects'
 import toast from 'react-hot-toast'
 import axios from 'axios'
 
@@ -15,6 +16,7 @@ export default function StandoffsPage() {
   const [creatingTeam, setCreatingTeam] = useState(false)
   const [findingMatch, setFindingMatch] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [selectedDomain, setSelectedDomain] = useState<Domain>('placement')
 
   const [userId, setUserId] = useState<string | null>(null)
 
@@ -35,6 +37,7 @@ export default function StandoffsPage() {
   }, [activeTab, userId])
 
   const loadStandoffs = async () => {
+    if (!userId) return
     setLoading(true)
     try {
       const type = activeTab === 'history' ? 'history' : 'active'
@@ -51,7 +54,10 @@ export default function StandoffsPage() {
   const handleCreateTeam = async () => {
     setCreatingTeam(true)
     try {
-      const response = await axios.post('/api/standoffs/create-team', { userId })
+      const response = await axios.post('/api/standoffs/create-team', { 
+        userId,
+        domain: selectedDomain
+      })
       toast.success('Team created! Waiting for members...')
       setCreatingTeam(false)
       // Navigate to team page or show team details
@@ -66,7 +72,7 @@ export default function StandoffsPage() {
     setFindingMatch(true)
     try {
       // This would find a match for an existing team
-      toast.info('Finding match...')
+      toast('Finding match...', { icon: '🔍' })
       setTimeout(() => {
         setFindingMatch(false)
         toast.success('Match found!')
@@ -187,9 +193,33 @@ export default function StandoffsPage() {
                   </motion.div>
 
                   <h2 className="text-4xl font-bold mb-4 neon-text">Ready for Team Battle?</h2>
-                  <p className="text-gray-400 mb-12 max-w-2xl mx-auto text-lg">
+                  <p className="text-gray-400 mb-6 max-w-2xl mx-auto text-lg">
                     Form a team of 3 and compete against other teams! The team that solves the problem fastest wins!
                   </p>
+
+                  {/* Domain Selection */}
+                  <div className="mb-8">
+                    <label className="block text-sm font-semibold mb-3 text-neon-cyan">Select Domain</label>
+                    <div className="flex flex-wrap gap-3 justify-center">
+                      {(Object.keys(DOMAINS) as Domain[]).map(domainId => {
+                        const domain = DOMAINS[domainId]
+                        return (
+                          <button
+                            key={domainId}
+                            onClick={() => setSelectedDomain(domainId)}
+                            className={`px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2 ${
+                              selectedDomain === domainId
+                                ? 'bg-neon-purple text-white'
+                                : 'bg-dark-card text-gray-400 hover:bg-dark-card/80'
+                            }`}
+                          >
+                            <span>{domain.icon}</span>
+                            <span>{domain.name}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
 
                   {/* Team Formation Display */}
                   <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-12">
@@ -327,7 +357,7 @@ export default function StandoffsPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        {standoff.winnerTeam && standoff.team1.includes(userId) && standoff.winnerTeam === 1 ? (
+                        {standoff.winnerTeam && userId && standoff.team1.includes(userId) && standoff.winnerTeam === 1 ? (
                           <Trophy className="w-12 h-12 text-neon-yellow" />
                         ) : (
                           <Users className="w-12 h-12 text-gray-600" />
@@ -341,7 +371,7 @@ export default function StandoffsPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        {standoff.winnerTeam && standoff.team1.includes(userId) && standoff.winnerTeam === 1 ? (
+                        {standoff.winnerTeam && userId && standoff.team1.includes(userId) && standoff.winnerTeam === 1 ? (
                           <div className="text-neon-green font-bold">Victory!</div>
                         ) : (
                           <div className="text-gray-500">Completed</div>
