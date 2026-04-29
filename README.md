@@ -1,11 +1,11 @@
 # 🚀 AI Tutor Platform - Gamified CS Learning Ecosystem
 
 > **Next-generation AI-powered, gamified Computer Science learning platform**
+Prototype Demo Video :https://drive.google.com/file/d/1hgJFdet9n1P81ult-L6F90vr1l7Vn-Za/view?usp=sharing
 
 A visually stunning, game-like learning ecosystem where users progress through knowledge like a journey. Built with Next.js, TypeScript, Gemini AI, and modern animations.
 
-![Platform Preview](https://via.placeholder.com/1200x600/0a0a0f/00ffff?text=AI+Tutor+Platform+Homepage)
-*Add your homepage screenshot here*
+<img width="1790" height="872" alt="Screenshot 2026-01-17 122832" src="https://github.com/user-attachments/assets/1ca44682-ef41-4686-96e4-be9e7fca7537" />
 
 ---
 
@@ -35,8 +35,7 @@ The platform follows a structured learning path that ensures comprehensive under
 - Visual indicators for completed phases
 - Snake-like path connecting all learning phases
 
-![Journey Map](https://via.placeholder.com/1200x600/0a0a0f/00ffff?text=Gamified+Journey+Map)
-*Add screenshot of the journey map here*
+<img width="1862" height="847" alt="Screenshot 2026-01-17 123217" src="https://github.com/user-attachments/assets/a062d688-2fc6-415b-9f09-e071e95b7417" />
 
 #### 2. **Theory Learning Phase**
 - AI-generated comprehensive theory content
@@ -46,8 +45,7 @@ The platform follows a structured learning path that ensures comprehensive under
 - Smooth scroll animations
 - Progress tracking
 
-![Theory Learning](https://via.placeholder.com/1200x600/0a0a0f/00ffff?text=Theory+Learning+Interface)
-*Add screenshot of theory learning interface here*
+![WhatsApp Image 2026-02-15 at 17 18 29](https://github.com/user-attachments/assets/b2392f29-91fe-4c15-a802-17cb37613f93)
 
 #### 3. **MCQ Gate (Progression Gate)**
 - Mandatory MCQ test to unlock coding challenges
