@@ -1,6 +1,7 @@
 # 🚀 AI Tutor Platform - Gamified CS Learning Ecosystem
 
 > **Next-generation AI-powered, gamified Computer Science learning platform**
+
 Prototype Demo Video :https://drive.google.com/file/d/1hgJFdet9n1P81ult-L6F90vr1l7Vn-Za/view?usp=sharing
 
 A visually stunning, game-like learning ecosystem where users progress through knowledge like a journey. Built with Next.js, TypeScript, Gemini AI, and modern animations.
